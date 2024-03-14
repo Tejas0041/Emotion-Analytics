@@ -23,7 +23,8 @@ const sgMailApi= process.env.SENDGRID_API;
 var OTP=0;
 
 const secret= process.env.SECRET || 'thisshouldbeabettersecret';
-const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
+// const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
+const dbUrl= process.env.DB_URL;
 
 const {isLoggedIn, isAdmin, isVerified, isActive}= require('./middleware.js');
 
