@@ -1,0 +1,36 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<div style="min-height: 88.8vh;">
+
+    <form action="/login" method="POST" class="validated-form mt-3" novalidate>
+        <div class="" style="display: grid; justify-content: center; align-items: center; font-size: 21px;">
+            <center><h2 style="font-size: 37px; font-weight: bold;" class="mb-1 mt-3">Login</h2></center>
+            <div class="mb-3 mt-3">
+                <label class="form-label" for="username">Enrollment number: </label>
+                <input class="form-control" style="border: 0.01cm solid black;" type="text" name="username" id="username" autofocus required>
+                <div class="invalid-feedback">
+                    Please enter Enrollment number
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label" for="password">Password: </label>
+                <input class="form-control" style="border: 0.01cm solid black;" type="password" name="password" id="password" required>
+                <div class="invalid-feedback">
+                    Please enter password
+                </div>
+            </div>
+
+            <a href="/forgot-password" style="text-decoration: none; font-size: 18px;" class="mb-2">Forgot Password?</a>
+
+            <button type="submit" class="btn btn-success mb-3" style="font-size: 18px;">Log In</button>
+
+            <p class="mb-3">Do not have an account? <a href="/register" style="text-decoration: none;">Register</a></p>
+            <center>
+                <p class="mb-3"><a href="/login/admin">Click here for admin login</a></p>
+            </center>
+
+        </div>
+
+    </form>
+</div>

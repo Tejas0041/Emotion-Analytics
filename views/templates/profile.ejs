@@ -1,0 +1,56 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<div style="min-height: 89vh;">
+    <center class="mt-4">
+        <div>
+            <img src="<%= u.image[0].thumbnail %>" class="img-thumbnail mb-3 border-start-0 border-end-0 border-opacity-75" style="border-radius: 50%; border: 2px solid black;" alt="">
+
+            <div style="margin: 2px auto;">
+                <div>
+                    <label for="fullname"><b>Name: </b></label>
+                    <span style="font-size: 18px;" id="fullname"><%= u.fullname %></span>
+                </div>
+                <hr >
+
+                <div>
+                    <% if(currentUser.username==='Admin'){ %>
+                        <label for="username"><b>Admin Id: </b></label>
+                    <% } else { %>
+                        <label for="username"><b>Enrollment Number: </b></label>
+                    <% } %>
+                        <span style="font-size: 18px;" id="username"><%= u.username %></span>
+                </div>
+                <hr >
+
+                <div>
+                    <label for="semester"><b>Semester: </b></label>
+                    <span style="font-size: 18px;" id="semester"><%= u.semester %></span>
+                </div>
+                <hr >
+
+                <div>
+                    <label for="personalemail"><b>Personal Email: </b></label>
+                    <span style="font-size: 18px;" id="personalemail"><%= u.personalemail %></span>
+                </div>
+                <hr >
+
+                <div>
+                    <label for="gsuite"><b>Gsuite Id: </b></label>
+                    <span style="font-size: 18px;" id="gsuite"><%= u.gsuite %></span>
+                </div>
+                <hr >
+
+                <div>
+                    <label for="mobilenumber"><b>Contact Number: </b></label>
+                    <span style="font-size: 18px;" id="mobilenumber">+91 <%= u.mobilenumber %></span>
+                </div>
+                <hr >
+            </div>
+            <% if(!(currentUser.username==='Admin')){ %>
+            <a href="/profile/edit/<%= u._id %>" style="text-decoration: none;">
+                <button type="submit" class="btn btn-success mb-3"><b>Edit Profile</b></button>
+            </a>
+            <% } %>
+        </div>
+    </center>
+</div>

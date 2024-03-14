@@ -1,0 +1,21 @@
+<div style="margin: 5px 10px;">
+    <% if(success && success.length){ %>
+
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: rgba(0, 255, 89, 0.425); color: rgb(219, 219, 219);">
+            <b><%= success %></b>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" fdprocessedid="u1duro"></button>
+        </div>
+
+    <% } %>
+
+    <% if(error && error.length){ %>
+
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: rgba(220, 64, 64, 0.379); color: rgb(219, 219, 219);">
+
+            <b><%= error %></b>
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" fdprocessedid="u1duro"></button>
+        </div>
+
+    <% } %>
+</div>

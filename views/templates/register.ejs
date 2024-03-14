@@ -1,0 +1,67 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<form action="/register" method="POST"  enctype="multipart/form-data" class="validated-form mt-3" novalidate>
+    <div class="" style="display: grid; justify-content: center; align-items: center; font-size: 21px;">
+        <center><h2 style="font-size: 37px; font-weight: bold;" class="mb-1 mt-3">Register</h2></center>
+        <div class="mb-3 mt-3">
+            <label class="form-label" for="fullname">Full Name: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="fullname" id="fullname" autofocus required>
+            <div class="invalid-feedback">
+                Please enter Name
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="username">Enrollment Number</label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="username" id="username" required>
+            <div class="invalid-feedback">
+                Please enter enrollment number
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="Semester">Semester: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="semester" id="semester" required>
+            <div class="invalid-feedback">
+                Please enter your current semester
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="personalemail">Personal Email Id: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="email" name="personalemail" id="personalemail" required>
+            <div class="invalid-feedback">
+                Please add personal email
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="gsuite">Gsuite Id: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="email" name="gsuite" id="gsuite" required>
+            <div class="invalid-feedback">
+                Please add gsuite ID
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="mobilenumber">Contact Number: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="mobilenumber" id="mobilenumer" required>
+            <div class="invalid-feedback">
+                Please enter your contact number
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="image">Add Image: </label>
+            <input type="file" name="image" id="image" style="border: 1px solid black; max-width: 298px;" class="form-control">
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label" for="password">Password: </label>
+            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="password" name="password" id="password" required>
+            <div class="invalid-feedback">
+                Please add a password
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mb-3" style="font-size: 18px;">Register</button>
+
+    </div>
+
+</form>

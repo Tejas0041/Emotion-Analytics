@@ -1,0 +1,41 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid d-flex">
+        <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button> -->
+        <a class="navbar-brand" style="margin-left: 20px;" href="#"><b>EMOTION ANALYTICS</b></a>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav" style="font-size: 18px; margin-left: 30px;">
+                <% if(currentUser){ %>
+                    <a class="nav-link" href="/home" style="margin-right: 10px;">Home</a>
+                <% } %>
+                <% if((currentUser) && (currentUser.username==='Admin')){ %>
+                    <a class="nav-link" href="/homeadmin/all">Students List</a>
+                <% } %>
+            </div>
+        </div>
+        <div class="navbar-nav ms-auto">
+            <%if(!currentUser){%>
+                <a class="btn btn-outline-light navbar" href="/" style="padding: 4px 15px;">Login</a>
+            <%}else{%>
+                <a class="nav-link" href="/viewprofile" style="margin-right: 12px;">View Profile</a>
+                <% if(currentUser.username==='Admin'){ %>
+                    <!-- <span style="height: 5px; width: 5px; background-color: red; border-radius: 50%;"></span>
+                    <a class="nav-link" href="/approval-request" style="margin-right: 12px;">Approval Request</a> -->
+                    <form action="/approval-request" method="get">
+                        <button type="submit" class="btn btn-outline-light position-relative" style="margin-right: 25px;">
+                            Approval requests <% if(dot!=0){ %>(<%= dot %>)<% } %>
+                            <% if(!(dot==0)){ %>
+                                <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+                            <% } %>
+                        </button>
+                    </form>
+                    <a href="/declined-request" class="btn btn-outline-light" style="margin-right: 25px;">
+                        Declined Requests
+                    </a>
+                <% } %>
+                <a class="btn btn-outline-light navbar" href="/logout" style="padding: 4px 15px;">Sign Out</a>
+            <% } %>
+        </div>
+    </div>
+</nav>

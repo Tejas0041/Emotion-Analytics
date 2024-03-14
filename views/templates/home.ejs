@@ -1,0 +1,15 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<div style="height: 89vh;">
+    <center>
+        <video id="webcam" autoplay playsinline></video>
+
+        <button class="btn btn-primary" id="start-button" style="font-weight: bold; display: block;">Start</button>
+
+        <a href="/stats" id="stop-button" style="text-decoration: none; color: white; display: none;">
+            <button class="btn btn-primary" style="font-weight: bold;">Stop</button>
+        </a>
+    </center>
+</div>
+
+<script src="../scripts/webcam.js"></script>

@@ -1,0 +1,24 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<link rel="stylesheet" href="styles/otpverification.css">
+
+<center style="margin-top: 150px;">
+    <div class="outer-container" style="min-height: 65.8vh;">
+        <h2>An OTP has been sent to your registered Gsuite ID</h2>
+        <h5 class="mb-4"><i>(<%= u[0].gsuite %>)</i></h5>
+        <form action="/change-password/<%= u[0]._id %>" method="post" class="validated-form" novalidate>
+        <div class="container mb-4">
+            <div id="inputs" class="inputs">
+                <input class="input" name="x1" type="text" inputmode="numeric" maxlength="1" required autofocus />
+                <input class="input" name="x2"  type="text" inputmode="numeric" maxlength="1" required />
+                <input class="input" name="x3"  type="text" inputmode="numeric" maxlength="1" required />
+                <input class="input" name="x4"  type="text" inputmode="numeric" maxlength="1" required />
+                <input class="input" name="x5"  type="text" inputmode="numeric" maxlength="1" required />
+                <input class="input" name="x6"  type="text" inputmode="numeric" maxlength="1" required />
+            </div>
+        </div>
+        <button class="btn btn-success" type="submit">Verify</button>
+        </form>
+    </div>
+</center>
+<script src="scripts/otpverification.js"></script>

@@ -1,0 +1,31 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<div style="min-height: 88.8vh;" class="mt-3">
+  <% if(users.length===0){ %>
+    <div  style="display: flex; align-items: center; justify-content: center; min-height: 88.8vh;">
+      <h2><b>No Declined requests at the moment</b></h2>
+    </div>
+  <% }else{ %>
+  <% for(u of users){ %>
+      <center>
+        <div class="card mb-3" style="max-width: 540px;  background: linear-gradient(to right, white, grey);">
+         <div class="row g-0">
+            <div class="col-md-4">
+              <img src="<%= u.image[0].thumbnail %>" class="img-fluid rounded-start" alt="">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <span class="card-title fs-5"><b><%= u.fullname %></b></span>
+
+                <p class="card-text" style="text-align: left;"><b>Enrollment: </b><%= u.username %></p>
+                <p class="card-text" style="text-align:left;"><b>Semester: </b><%= u.semester %></p>
+                <p class="card-text" style="text-align: left;"><b>Gsuite Id: </b><%= u.gsuite %></p>
+                <div class="card-text" style="text-align: left;"><b><u>Your Remark:</u> </b><%= u.remark %></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </center>
+    <% } %>
+    <% } %>
+</div>
