@@ -19,13 +19,14 @@
             <hr>
             <div class="row">
                 <div class="col fw-bold">Time</div>
-                <div class="col">10 sec</div>
-                <div class="col">20 sec</div>
-                <div class="col">30 sec</div>
-                <div class="col">40 sec</div>
-                <div class="col">50 sec</div>
-                <div class="col">60 sec</div>
-                <div class="col">70 sec</div>
+                <div class="col"><%= (emotion.happy)/1000 %> sec</div>
+                <div class="col"><%= (emotion.neutral)/1000 %> sec</div>
+                <div class="col"><%= (emotion.sad)/1000 %> sec</div>
+                <div class="col"><%= (emotion.angry)/1000 %> sec</div>
+                <div class="col"><%= (emotion.fearful)/1000 %> sec</div>
+                <div class="col"><%= (emotion.disgusted)/1000 %> sec</div>
+                <div class="col"><%= (emotion.surprised)/1000 %> sec</div>
+                <div style="font-size: medium;">(Total Time): <%= emotion.total/1000 %> sec  </div>
             </div>
         </div>
         <div class="container mt-5 bg-dark" style="color: white; padding: 15px 20px; border-radius: 10px; font-size: 20px;">
@@ -33,14 +34,12 @@
                 <div class="col fw-bold">Charts</div>
                 <div class="col fw-bold">Bar Graph</div>
                 <div class="col fw-bold">Pie Chart</div>
-                <div class="col fw-bold">Scatter Plot</div>
             </div>
             <hr>
             <div class="row">
                 <div class="col fw-bold">Links</div>
-                <div class="col"><a href="" class="link" style="text-decoration: none;">Open Bar Graph</a></div>
-                <div class="col"><a href="" style="text-decoration: none;">Open Pie Chart</a></div>
-                <div class="col"><a href="" style="text-decoration: none;">Open Scatter Plot</a></div>
+                <div class="col"><a href="/bargraph/<%= id %>" class="link" style="text-decoration: none;">Open Bar Graph</a></div>
+                <div class="col"><a href="/piechart/<%= id %>" style="text-decoration: none;">Open Pie Chart</a></div>
             </div>
         </div>
     </div>

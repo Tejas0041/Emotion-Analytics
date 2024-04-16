@@ -34,8 +34,8 @@ const userschema= new Schema({
         default: true,
     },
     emotion: {
-        type: Schema.Types.ObjectId,
-        ref: 'Emotion'
+        type: Number,
+        default: 0,
     },
     remark:{
         type: String,

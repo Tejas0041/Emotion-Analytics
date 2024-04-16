@@ -11,6 +11,7 @@ const ejsMate= require('ejs-mate');
 const session= require('express-session');
 const flash= require('connect-flash');
 const User= require('./models/userschema.js');
+const Emotion= require('./models/emotionschema.js');
 const {cloudinary}= require('./cloudinary/cloudinary.js');
 const multer= require('multer');
 const {storage} = require('./cloudinary/cloudinary.js');
@@ -18,13 +19,20 @@ const upload= multer({storage});
 const passport= require('passport');
 const LocalStrategy= require('passport-local');
 const MongoDBStore= require("connect-mongo");
+const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
 const sgMailApi= process.env.SENDGRID_API;
 var OTP=0;
+const faceapi = require('face-api.js');
+const modelsDirectory = path.join(__dirname, 'public', 'model');
+
+const httpProxy = require('http-proxy');
+const proxy = httpProxy.createProxyServer();
 
 const secret= process.env.SECRET || 'thisshouldbeabettersecret';
 // const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
 const dbUrl= process.env.DB_URL;
+
 
 const {isLoggedIn, isAdmin, isVerified, isActive}= require('./middleware.js');
 
@@ -46,7 +54,6 @@ db.on("error", console.error.bind(console, "connection error: "));
 db.once("open", ()=>{
     console.log("Database Connected");
 });
-
 
 const store = new MongoDBStore({
     mongoUrl: dbUrl,
@@ -84,6 +91,10 @@ passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 var k=0;
 
+app.use('/face-api', (req, res) => {
+    proxy.web(req, res, { target: 'http://face-api-server.com' });
+});
+
 app.use((req, res, next)=>{
     res.locals.currentUser= req.user;
     res.locals.success= req.flash('success');
@@ -92,12 +103,13 @@ app.use((req, res, next)=>{
     next();
 });
 
+
 app.get('/', (req, res)=>{
     if(req.user) res.redirect('/viewprofile');
     else res.redirect('/login');
 });
 
-app.get('/home', isLoggedIn, isVerified, isActive, (req, res)=>{
+app.get('/home', isLoggedIn, isVerified, isActive, async(req, res)=>{
     res.render('templates/home.ejs');
 });
 
@@ -246,6 +258,7 @@ app.post('/register',upload.array('image'), async(req, res)=>{
         const u = new User({fullname, username, personalemail, gsuite, semester, mobilenumber});
 
         u.image =req.files.map(f=>({url:f.path, filename: f.filename}));
+        u.emotion= 0;
         const newUser= await User.register(u, password);
         k+=1;
         res.redirect(`/approval/${newUser._id}`);
@@ -291,9 +304,54 @@ app.put('/profile/edit/:id',isLoggedIn, isVerified, isActive, upload.array('imag
     res.redirect('/viewprofile');
 });
 
-app.get('/stats', isLoggedIn, isVerified, isActive, (req, res)=>{
-    res.render('templates/stats.ejs');
+app.post('/stats', isLoggedIn, isVerified, isActive, async(req, res)=>{
+    const emotion= req.body;
+    const newEmo= new Emotion(req.body);
+
+    newEmo.user= req.user._id;
+
+    const u= await User.findById(newEmo.user);
+    u.emotion++;
+
+    u.save();
+
+    const id= newEmo.user;
+
+    await newEmo.save();
+    res.render('templates/stats.ejs', {emotion, id});
 });
+
+app.get('/bargraph/:id', async(req, res)=>{
+    const {id}= req.params;
+    const U= await User.findById(id);
+    const e= await Emotion.find({user: id});
+    var actualEmo= e[U.emotion-1];
+
+    const jsonData = JSON.stringify({
+        labels: ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'],
+        values: [actualEmo.happy/1000, actualEmo.neutral/1000, actualEmo.sad/1000, actualEmo.angry/1000, actualEmo.fearful/1000, actualEmo.disgusted/1000, actualEmo.surprised/1000] // Example values
+    });
+
+
+
+    // const data = JSON.stringify(dta);
+
+    // return res.send(data);
+    res.render('templates/bargraph.ejs', {jsonData});
+})
+
+app.get('/piechart/:id', async(req, res)=>{
+    const {id}= req.params;
+    const U= await User.findById(id);
+    const e= await Emotion.find({user: id});
+    var actualEmo= e[U.emotion-1];
+
+    const pieJsonData = JSON.stringify({
+        labels: ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'],
+        values: [actualEmo.happy/1000, actualEmo.neutral/1000, actualEmo.sad/1000, actualEmo.angry/1000, actualEmo.fearful/1000, actualEmo.disgusted/1000, actualEmo.surprised/1000] // Example values
+    });
+    res.render('templates/piechart.ejs', {pieJsonData});
+})
 
 app.get('/deactivate/:id', isAdmin, async(req, res)=>{
     const {id}= req.params;

@@ -6,9 +6,10 @@ const emotionschema= new Schema({
     neutral: Number,
     sad: Number,
     angry: Number,
-    fear: Number,
-    disgusting: Number,
-    surprise: Number
+    fearful: Number,
+    disgusted: Number,
+    surprised: Number,
+    user: String,
 });
 
 module.exports= mongoose.model('Emotion', emotionschema);

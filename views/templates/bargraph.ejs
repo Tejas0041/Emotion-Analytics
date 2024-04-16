@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bar Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <center>
+    <div>
+        <h1>Bar Graph</h1>
+    </div>
+    <canvas id="myChart" style="max-width: 80%; max-height: 80vh;"></canvas>
+    <a href="/stats"></a>
+  </center>
+
+  <script>
+    // Data from Node.js
+    const data = <%- jsonData %>;
+
+    // Create bar chart
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: 'Time (in sec)',
+          data: data.values,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          xAxes: [{
+            ticks: {
+              fontColor: 'white'
+            },
+            gridLines: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              fontColor: 'white',
+            },
+            gridLines: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            }
+          }]
+        }
+      }
+    });
+  </script>
+</body>
+</html>
