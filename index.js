@@ -109,7 +109,7 @@ app.get('/', (req, res)=>{
     else res.redirect('/login');
 });
 
-app.get('/home', isLoggedIn, isVerified, isActive, async(req, res)=>{
+app.get('/home', isLoggedIn, isActive, async(req, res)=>{
     res.render('templates/home.ejs');
 });
 
@@ -127,14 +127,14 @@ app.get('/homeadmin/:filter', async(req, res)=>{
     res.render('templates/homeadmin.ejs', {users});
 });
 
-app.get('/viewprofile/:id', isLoggedIn, isVerified, async(req, res)=>{
+app.get('/viewprofile/:id', isLoggedIn, async(req, res)=>{
     // const u= req.user;
     const {id}= req.params;
     const u= await User.findById(id);
     res.render('templates/profile.ejs', {u});
 });
 
-app.get('/viewprofile', isLoggedIn, isVerified, async(req, res)=>{
+app.get('/viewprofile', isLoggedIn, async(req, res)=>{
     const u= req.user;
     // const {id}= req.params;
     // const u= await User.findById(id);
@@ -149,7 +149,7 @@ app.get('/login/admin', (req, res)=>{
     res.render('templates/adminlogin.ejs');
 });
 
-app.post('/login', isVerified, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
+app.post('/login', passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
     req.flash('success', "Welcome back!");
 
     res.redirect('/viewprofile');
@@ -270,14 +270,14 @@ app.post('/register',upload.array('image'), async(req, res)=>{
     }
 });
 
-app.get('/profile/edit/:id', isLoggedIn, isVerified, async(req, res)=>{
+app.get('/profile/edit/:id', isLoggedIn, async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
     res.render('templates/editprofile.ejs', {u});
 });
 
-app.put('/profile/edit/:id',isLoggedIn, isVerified, upload.array('image'), async(req, res)=>{
+app.put('/profile/edit/:id',isLoggedIn, upload.array('image'), async(req, res)=>{
     const {id}= req.params;
     const u= req.body;
     const user= await User.findById(id);
