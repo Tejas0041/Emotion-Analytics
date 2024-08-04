@@ -127,14 +127,14 @@ app.get('/homeadmin/:filter', async(req, res)=>{
     res.render('templates/homeadmin.ejs', {users});
 });
 
-app.get('/viewprofile/:id', isLoggedIn, isVerified, isActive, async(req, res)=>{
+app.get('/viewprofile/:id', isLoggedIn, isVerified, async(req, res)=>{
     // const u= req.user;
     const {id}= req.params;
     const u= await User.findById(id);
     res.render('templates/profile.ejs', {u});
 });
 
-app.get('/viewprofile', isLoggedIn, isVerified, isActive, async(req, res)=>{
+app.get('/viewprofile', isLoggedIn, isVerified, async(req, res)=>{
     const u= req.user;
     // const {id}= req.params;
     // const u= await User.findById(id);
@@ -149,13 +149,13 @@ app.get('/login/admin', (req, res)=>{
     res.render('templates/adminlogin.ejs');
 });
 
-app.post('/login', isVerified, isActive, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
+app.post('/login', isVerified, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
     req.flash('success', "Welcome back!");
 
     res.redirect('/viewprofile');
 });
 
-app.post('/login/admin', isAdmin, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login/admin'}), (req, res)=>{
+app.post('/login/admin', passport.authenticate('local', {failureFlash: true, failureRedirect: '/login/admin'}), (req, res)=>{
     req.flash('success', "Welcome back, Admin!");
 
     res.redirect('/homeadmin/all');
@@ -172,7 +172,7 @@ app.get('/logout', (req, res)=>{
 });
 
 //for admin
-app.get('/approval-request',isAdmin, async(req, res)=>{
+app.get('/approval-request', async(req, res)=>{
     const users= await User.find({verified: false, remark: "!ok"});
     if(users){
         notification=1;
@@ -199,7 +199,7 @@ app.get('/approval/:id', async(req, res)=>{
     res.render('templates/approvalmessage.ejs', {message});
 });
 
-app.post('/approve-registration/:id', isAdmin, async(req, res)=>{
+app.post('/approve-registration/:id', async(req, res)=>{
     const id= req.params.id;
 
     const user= await User.findById(id);
@@ -211,7 +211,7 @@ app.post('/approve-registration/:id', isAdmin, async(req, res)=>{
     res.redirect('/approval-request');
 });
 
-app.post('/decline-registration/:id', isAdmin, async(req, res)=>{
+app.post('/decline-registration/:id', async(req, res)=>{
     const {id}= req.params;
     const user= await User.findById(id);
     const {remark}= req.body;
@@ -270,14 +270,14 @@ app.post('/register',upload.array('image'), async(req, res)=>{
     }
 });
 
-app.get('/profile/edit/:id', isLoggedIn, isVerified, isActive, async(req, res)=>{
+app.get('/profile/edit/:id', isLoggedIn, isVerified, async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
     res.render('templates/editprofile.ejs', {u});
 });
 
-app.put('/profile/edit/:id',isLoggedIn, isVerified, isActive, upload.array('image'), async(req, res)=>{
+app.put('/profile/edit/:id',isLoggedIn, isVerified, upload.array('image'), async(req, res)=>{
     const {id}= req.params;
     const u= req.body;
     const user= await User.findById(id);
@@ -304,7 +304,7 @@ app.put('/profile/edit/:id',isLoggedIn, isVerified, isActive, upload.array('imag
     res.redirect('/viewprofile');
 });
 
-app.post('/stats', isLoggedIn, isVerified, isActive, async(req, res)=>{
+app.post('/stats', isLoggedIn, isActive, async(req, res)=>{
     const emotion= req.body;
     const newEmo= new Emotion(req.body);
 
@@ -353,7 +353,7 @@ app.get('/piechart/:id', async(req, res)=>{
     res.render('templates/piechart.ejs', {pieJsonData});
 })
 
-app.get('/deactivate/:id', isAdmin, async(req, res)=>{
+app.get('/deactivate/:id', async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
@@ -363,7 +363,7 @@ app.get('/deactivate/:id', isAdmin, async(req, res)=>{
     res.redirect('/homeadmin/all');
 });
 
-app.get('/activate/:id', isAdmin, async(req, res)=>{
+app.get('/activate/:id', async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
@@ -373,7 +373,7 @@ app.get('/activate/:id', isAdmin, async(req, res)=>{
     res.redirect('/homeadmin/all');
 });
 
-app.get('/declined-request', isAdmin, async(req, res)=>{
+app.get('/declined-request', async(req, res)=>{
     const users= await User.find({verified: false, remark: {$ne: "!ok"}});
     res.render('templates/declinedrequest.ejs', {users});
 });
