@@ -109,7 +109,7 @@ app.get('/', (req, res)=>{
     else res.redirect('/login');
 });
 
-app.get('/home', isLoggedIn, isActive, async(req, res)=>{
+app.get('/home', isLoggedIn, async(req, res)=>{
     res.render('templates/home.ejs');
 });
 
@@ -304,7 +304,7 @@ app.put('/profile/edit/:id',isLoggedIn, upload.array('image'), async(req, res)=>
     res.redirect('/viewprofile');
 });
 
-app.post('/stats', isLoggedIn, isActive, async(req, res)=>{
+app.post('/stats', isLoggedIn, async(req, res)=>{
     const emotion= req.body;
     const newEmo= new Emotion(req.body);
 
