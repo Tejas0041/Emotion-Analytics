@@ -19,19 +19,15 @@ const upload= multer({storage});
 const passport= require('passport');
 const LocalStrategy= require('passport-local');
 const MongoDBStore= require("connect-mongo");
-const cors = require('cors');
 const sgMail = require('@sendgrid/mail');
 const sgMailApi= process.env.SENDGRID_API;
-var OTP=0;
-const faceapi = require('face-api.js');
 const modelsDirectory = path.join(__dirname, 'public', 'model');
 
 const httpProxy = require('http-proxy');
-const proxy = httpProxy.createProxyServer();
 
 const secret= process.env.SECRET || 'thisshouldbeabettersecret';
-// const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
-const dbUrl= process.env.DB_URL;
+const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
+// const dbUrl= process.env.DB_URL;
 
 
 const {isLoggedIn, isAdmin, isVerified, isActive}= require('./middleware.js');
@@ -91,9 +87,16 @@ passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 var k=0;
 
-app.use('/face-api', (req, res) => {
-    proxy.web(req, res, { target: 'http://face-api-server.com' });
-});
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charactersLength);
+        result += characters[randomIndex];
+    }
+    return result;
+}
 
 app.use((req, res, next)=>{
     res.locals.currentUser= req.user;
@@ -103,13 +106,12 @@ app.use((req, res, next)=>{
     next();
 });
 
-
 app.get('/', (req, res)=>{
     if(req.user) res.redirect('/viewprofile');
     else res.redirect('/login');
 });
 
-app.get('/home', isLoggedIn, async(req, res)=>{
+app.get('/home', isLoggedIn, isVerified, isActive, async(req, res)=>{
     res.render('templates/home.ejs');
 });
 
@@ -123,18 +125,17 @@ app.get('/homeadmin/:filter', async(req, res)=>{
     }else if(filter=='deactive'){
         var users= await User.find({active: false});
     }
-
     res.render('templates/homeadmin.ejs', {users});
 });
 
-app.get('/viewprofile/:id', isLoggedIn, async(req, res)=>{
+app.get('/viewprofile/:id', isLoggedIn, isVerified, isActive, async(req, res)=>{
     // const u= req.user;
     const {id}= req.params;
     const u= await User.findById(id);
     res.render('templates/profile.ejs', {u});
 });
 
-app.get('/viewprofile', isLoggedIn, async(req, res)=>{
+app.get('/viewprofile', isLoggedIn, isVerified, isActive, async(req, res)=>{
     const u= req.user;
     // const {id}= req.params;
     // const u= await User.findById(id);
@@ -149,13 +150,13 @@ app.get('/login/admin', (req, res)=>{
     res.render('templates/adminlogin.ejs');
 });
 
-app.post('/login', passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
+app.post('/login', isVerified, isActive, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res)=>{
     req.flash('success', "Welcome back!");
 
     res.redirect('/viewprofile');
 });
 
-app.post('/login/admin', passport.authenticate('local', {failureFlash: true, failureRedirect: '/login/admin'}), (req, res)=>{
+app.post('/login/admin', isAdmin, passport.authenticate('local', {failureFlash: true, failureRedirect: '/login/admin'}), (req, res)=>{
     req.flash('success', "Welcome back, Admin!");
 
     res.redirect('/homeadmin/all');
@@ -172,7 +173,7 @@ app.get('/logout', (req, res)=>{
 });
 
 //for admin
-app.get('/approval-request', async(req, res)=>{
+app.get('/approval-request',isAdmin, async(req, res)=>{
     const users= await User.find({verified: false, remark: "!ok"});
     if(users){
         notification=1;
@@ -199,7 +200,7 @@ app.get('/approval/:id', async(req, res)=>{
     res.render('templates/approvalmessage.ejs', {message});
 });
 
-app.post('/approve-registration/:id', async(req, res)=>{
+app.post('/approve-registration/:id', isAdmin, async(req, res)=>{
     const id= req.params.id;
 
     const user= await User.findById(id);
@@ -211,7 +212,7 @@ app.post('/approve-registration/:id', async(req, res)=>{
     res.redirect('/approval-request');
 });
 
-app.post('/decline-registration/:id', async(req, res)=>{
+app.post('/decline-registration/:id', isAdmin, async(req, res)=>{
     const {id}= req.params;
     const user= await User.findById(id);
     const {remark}= req.body;
@@ -270,14 +271,14 @@ app.post('/register',upload.array('image'), async(req, res)=>{
     }
 });
 
-app.get('/profile/edit/:id', isLoggedIn, async(req, res)=>{
+app.get('/profile/edit/:id', isLoggedIn, isVerified, isActive, async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
     res.render('templates/editprofile.ejs', {u});
 });
 
-app.put('/profile/edit/:id',isLoggedIn, upload.array('image'), async(req, res)=>{
+app.put('/profile/edit/:id',isLoggedIn, isVerified, isActive, upload.array('image'), async(req, res)=>{
     const {id}= req.params;
     const u= req.body;
     const user= await User.findById(id);
@@ -304,19 +305,17 @@ app.put('/profile/edit/:id',isLoggedIn, upload.array('image'), async(req, res)=>
     res.redirect('/viewprofile');
 });
 
-app.post('/stats', isLoggedIn, async(req, res)=>{
+app.post('/stats', isLoggedIn, isVerified, isActive, async(req, res)=>{
     const emotion= req.body;
     const newEmo= new Emotion(req.body);
 
     newEmo.user= req.user._id;
-
     const u= await User.findById(newEmo.user);
     u.emotion++;
-
+    // console.log(u.emotion);
     u.save();
-
+    // console.log(u);
     const id= newEmo.user;
-
     await newEmo.save();
     res.render('templates/stats.ejs', {emotion, id});
 });
@@ -325,17 +324,15 @@ app.get('/bargraph/:id', async(req, res)=>{
     const {id}= req.params;
     const U= await User.findById(id);
     const e= await Emotion.find({user: id});
-    var actualEmo= e[U.emotion-1];
+    // console.log(e);
+    var actualEmo= e[e.length-1];
 
     const jsonData = JSON.stringify({
         labels: ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'],
-        values: [actualEmo.happy/1000, actualEmo.neutral/1000, actualEmo.sad/1000, actualEmo.angry/1000, actualEmo.fearful/1000, actualEmo.disgusted/1000, actualEmo.surprised/1000] // Example values
+        values: [actualEmo.happy/1000, actualEmo.neutral/1000, actualEmo.sad/1000, actualEmo.angry/1000, actualEmo.fearful/1000, actualEmo.disgusted/1000, actualEmo.surprised/1000]
     });
 
-
-
     // const data = JSON.stringify(dta);
-
     // return res.send(data);
     res.render('templates/bargraph.ejs', {jsonData});
 })
@@ -344,7 +341,7 @@ app.get('/piechart/:id', async(req, res)=>{
     const {id}= req.params;
     const U= await User.findById(id);
     const e= await Emotion.find({user: id});
-    var actualEmo= e[U.emotion-1];
+    var actualEmo= e[e.length-1];
 
     const pieJsonData = JSON.stringify({
         labels: ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'],
@@ -353,7 +350,7 @@ app.get('/piechart/:id', async(req, res)=>{
     res.render('templates/piechart.ejs', {pieJsonData});
 })
 
-app.get('/deactivate/:id', async(req, res)=>{
+app.get('/deactivate/:id', isAdmin, async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
@@ -363,7 +360,7 @@ app.get('/deactivate/:id', async(req, res)=>{
     res.redirect('/homeadmin/all');
 });
 
-app.get('/activate/:id', async(req, res)=>{
+app.get('/activate/:id', isAdmin, async(req, res)=>{
     const {id}= req.params;
     const u= await User.findById(id);
 
@@ -373,7 +370,7 @@ app.get('/activate/:id', async(req, res)=>{
     res.redirect('/homeadmin/all');
 });
 
-app.get('/declined-request', async(req, res)=>{
+app.get('/declined-request', isAdmin, async(req, res)=>{
     const users= await User.find({verified: false, remark: {$ne: "!ok"}});
     res.render('templates/declinedrequest.ejs', {users});
 });
@@ -439,7 +436,7 @@ app.post('/update-password/:id', async(req, res, next)=>{
 
     const user = await User.findById(id).select('+hash');
 
-    const data= 'fake';
+    const data= generateRandomString(5+(Math.ceil(Math.random()*10)));
 
     const temp= new User({fullname: data, username: data, personalemail: data, gsuite: data, semester: data, mobilenumber: data, password: req.body.password_cp});
     const newUser= await User.register(temp, req.body.password_cp);
@@ -456,6 +453,7 @@ app.post('/update-password/:id', async(req, res, next)=>{
         req.flash('success', "Successfully changed the password. Now Login with new Password")
         res.redirect('/login');
     }catch(e){
+        console.log("CAUGHT ERR")
         console.log(e);
     }
 });
