@@ -26,8 +26,8 @@ const modelsDirectory = path.join(__dirname, 'public', 'model');
 const httpProxy = require('http-proxy');
 
 const secret= process.env.SECRET || 'thisshouldbeabettersecret';
-const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
-// const dbUrl= process.env.DB_URL;
+// const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
+const dbUrl= process.env.DB_URL;
 
 
 const {isLoggedIn, isAdmin, isVerified, isActive}= require('./middleware.js');
