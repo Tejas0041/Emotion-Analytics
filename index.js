@@ -8,17 +8,27 @@ const methodOverride = require('method-override')
 const mongoose = require('mongoose')
 const path = require('path')
 const ejsMate = require('ejs-mate')
+const cookieParser = require('cookie-parser')
+// JWT middleware removed - using Passport.js for authentication
 
 // Performance optimizations
 app.set('trust proxy', 1)
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
-// Add compression for better performance
+// Add cache control headers
+// Middleware setup
+app.use(cookieParser())
 app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=86400') // 1 day cache for static assets
+  // Don't cache any pages that require authentication
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+  res.setHeader('Expires', '0')
   next()
 })
+
+// Remove authentication middleware from here - will be added after Passport setup
+
+// Remove the duplicate logout route here since we have one later
 const session = require('express-session')
 const flash = require('connect-flash')
 const User = require('./models/userschema.js')
@@ -161,31 +171,74 @@ function generateRandomString (length) {
   return result
 }
 
+// Define public paths that don't require authentication
+const publicPaths = [
+  '/login',
+  '/logout',
+  '/register',
+  '/forgot-password',
+  '/styles',
+  '/scripts',
+  '/model',
+  '/health',
+  '/admin/reset-password',
+  '/otp-verification-page',
+  '/change-password',
+  '/update-password',
+  '/resubmission',
+  '/approval'
+]
+
 app.use((req, res, next) => {
   // Ensure proper session handling
   if (req.session && !req.user && req.session.passport) {
     // Clear stale passport session data
-    delete req.session.passport;
+    delete req.session.passport
   }
-  
-  res.locals.currentUser = req.user
+
+  // Set flash messages and notification count
   res.locals.success = req.flash('success')
   res.locals.error = req.flash('error')
   res.locals.dot = k
-  next()
+
+  // Authentication middleware - now after Passport setup
+  // For public paths, ensure currentUser is null
+  if (publicPaths.some(path => req.path.startsWith(path))) {
+    res.locals.currentUser = null
+    return next()
+  }
+
+  // For protected paths, check authentication
+  if (req.user && req.isAuthenticated && req.isAuthenticated()) {
+    res.locals.currentUser = req.user
+    next()
+  } else {
+    res.locals.currentUser = null
+    res.redirect('/login')
+  }
+})
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() })
 })
 
 app.get('/', (req, res) => {
-  // Check if user is properly authenticated
-  if (req.user && req.isAuthenticated()) {
-    res.redirect('/viewprofile')
-  } else {
-    // Clear any stale session data
-    req.session.destroy((err) => {
-      if (err) console.error('Session cleanup error:', err);
-      res.clearCookie('emotionanalytics');
+  try {
+    // Check if user is properly authenticated
+    if (req.user && req.isAuthenticated && req.isAuthenticated()) {
+      res.redirect('/viewprofile')
+    } else {
+      // Clear any stale session data and redirect to login
+      res.clearCookie('emotionanalytics', { path: '/' })
+      res.clearCookie('connect.sid', { path: '/' })
+      res.clearCookie('token', { path: '/' })
       res.redirect('/login')
-    });
+    }
+  } catch (error) {
+    console.error('Root route error:', error)
+    res.clearCookie('emotionanalytics', { path: '/' })
+    res.redirect('/login')
   }
 })
 
@@ -232,6 +285,14 @@ app.get('/viewprofile', isLoggedIn, isVerified, isActive, async (req, res) => {
 })
 
 app.get('/login', (req, res) => {
+  // Ensure no caching of login page
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
+
+  // Clear currentUser to ensure clean state
+  res.locals.currentUser = null
+
   res.render('templates/login.ejs')
 })
 
@@ -241,49 +302,127 @@ app.get('/login/admin', (req, res) => {
 
 app.post(
   '/login',
-  isVerified,
-  isActive,
   passport.authenticate('local', {
     failureFlash: true,
     failureRedirect: '/login'
   }),
+  isVerified,
+  isActive,
   (req, res) => {
     req.flash('success', 'Welcome back!')
-
+    console.log('Login successful for user:', req.user.username)
     res.redirect('/viewprofile')
   }
 )
 
 app.post(
   '/login/admin',
-  isAdmin,
   passport.authenticate('local', {
     failureFlash: true,
     failureRedirect: '/login/admin'
   }),
+  isAdmin,
   (req, res) => {
     req.flash('success', 'Welcome back, Admin!')
-
+    console.log('Admin login successful for user:', req.user.username)
     res.redirect('/homeadmin/all')
   }
 )
 
-app.get('/logout', (req, res) => {
-  req.logout(function (err) {
-    if (err) {
-      return next(err)
-    }
-    // Destroy the session completely
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Session destruction error:', err);
-      }
-      // Clear the session cookie
-      res.clearCookie('emotionanalytics');
-      req.flash('success', 'Logged you out!')
-      res.redirect('/login')
-    });
+app.get('/logout', (req, res, next) => {
+  console.log('Logout route called')
+
+  // Aggressive cookie clearing - try multiple variations to ensure removal
+  const cookiesToClear = ['emotionanalytics', 'connect.sid', 'token']
+
+  cookiesToClear.forEach(cookieName => {
+    // Clear with different path and option combinations
+    res.clearCookie(cookieName)
+    res.clearCookie(cookieName, { path: '/' })
+    res.clearCookie(cookieName, { path: '/', domain: 'localhost' })
+    res.clearCookie(cookieName, {
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax'
+    })
+    res.clearCookie(cookieName, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    })
   })
+
+  // Clear currentUser immediately
+  res.locals.currentUser = null
+
+  try {
+    // Try passport logout if available
+    if (req.logout && typeof req.logout === 'function') {
+      req.logout(function (err) {
+        if (err) {
+          console.error('Passport logout error:', err)
+        }
+
+        // Try to destroy session
+        if (req.session && typeof req.session.destroy === 'function') {
+          req.session.destroy(sessionErr => {
+            if (sessionErr) {
+              console.error('Session destruction error:', sessionErr)
+            }
+            console.log(
+              'Session destroyed, all cookies cleared, redirecting to login'
+            )
+            // Add cache-busting parameter to prevent cached pages
+            res.redirect('/login?logout=success&t=' + Date.now())
+          })
+        } else {
+          console.log(
+            'No session to destroy, all cookies cleared, redirecting to login'
+          )
+          res.redirect('/login?logout=success&t=' + Date.now())
+        }
+      })
+    } else {
+      // No passport logout available
+      console.log(
+        'No passport logout, clearing session and all cookies manually'
+      )
+      if (req.session) {
+        req.session.destroy(err => {
+          if (err) console.error('Manual session destruction error:', err)
+          res.redirect('/login?logout=success&t=' + Date.now())
+        })
+      } else {
+        res.redirect('/login?logout=success&t=' + Date.now())
+      }
+    }
+  } catch (error) {
+    console.error('Critical logout error:', error)
+    res.redirect('/login?logout=error&t=' + Date.now())
+  }
+})
+
+// Alternative logout route for emergencies
+app.get('/force-logout', (req, res) => {
+  try {
+    // Force clear everything
+    res.clearCookie('emotionanalytics')
+    res.clearCookie('connect.sid') // Default session cookie name
+
+    // Try to destroy session if it exists
+    if (req.session) {
+      req.session.destroy(() => {
+        res.redirect('/login?msg=force-logout')
+      })
+    } else {
+      res.redirect('/login?msg=force-logout')
+    }
+  } catch (error) {
+    console.error('Force logout error:', error)
+    res.redirect('/login?msg=error')
+  }
 })
 
 //for admin
@@ -451,15 +590,18 @@ app.put(
 app.post('/stats', isLoggedIn, isVerified, isActive, async (req, res) => {
   try {
     const emotion = req.body
-    console.log('Received emotion data:', emotion);
-    
+    console.log('Received emotion data:', emotion)
+
     // Validate that we have some emotion data
-    const totalTime = parseInt(emotion.total) || 0;
+    const totalTime = parseInt(emotion.total) || 0
     if (totalTime === 0) {
-      req.flash('error', 'No emotion data detected. Please try again and ensure your face is visible.');
-      return res.redirect('/home');
+      req.flash(
+        'error',
+        'No emotion data detected. Please try again and ensure your face is visible.'
+      )
+      return res.redirect('/home')
     }
-    
+
     const newEmo = new Emotion({
       happy: parseInt(emotion.happy) || 0,
       neutral: parseInt(emotion.neutral) || 0,
@@ -470,40 +612,40 @@ app.post('/stats', isLoggedIn, isVerified, isActive, async (req, res) => {
       surprised: parseInt(emotion.surprised) || 0,
       total: totalTime,
       user: req.user._id
-    });
+    })
 
     const u = await User.findById(req.user._id)
     u.emotion++
     await u.save()
-    
+
     await newEmo.save()
-    console.log('Emotion data saved:', newEmo);
-    
+    console.log('Emotion data saved:', newEmo)
+
     res.render('templates/stats.ejs', { emotion: newEmo, id: newEmo._id })
   } catch (error) {
-    console.error('Error saving emotion data:', error);
-    req.flash('error', 'Failed to save emotion analysis. Please try again.');
-    res.redirect('/home');
+    console.error('Error saving emotion data:', error)
+    req.flash('error', 'Failed to save emotion analysis. Please try again.')
+    res.redirect('/home')
   }
 })
 
 app.get('/bargraph/:id', async (req, res) => {
   try {
     const { id } = req.params
-    
+
     // Try to find emotion by ID first (new way)
-    let actualEmo = await Emotion.findById(id);
-    
+    let actualEmo = await Emotion.findById(id)
+
     // If not found, fall back to user ID method (old way for compatibility)
     if (!actualEmo) {
       const U = await User.findById(id)
       const e = await Emotion.find({ user: id })
       actualEmo = e[e.length - 1]
     }
-    
+
     if (!actualEmo) {
-      req.flash('error', 'Emotion data not found');
-      return res.redirect('/user/stats');
+      req.flash('error', 'Emotion data not found')
+      return res.redirect('/user/stats')
     }
 
     const jsonData = JSON.stringify({
@@ -529,29 +671,29 @@ app.get('/bargraph/:id', async (req, res) => {
 
     res.render('templates/bargraph.ejs', { jsonData, id })
   } catch (error) {
-    console.error('Error in bargraph route:', error);
-    req.flash('error', 'Failed to load chart data');
-    res.redirect('/user/stats');
+    console.error('Error in bargraph route:', error)
+    req.flash('error', 'Failed to load chart data')
+    res.redirect('/user/stats')
   }
 })
 
 app.get('/piechart/:id', async (req, res) => {
   try {
     const { id } = req.params
-    
+
     // Try to find emotion by ID first (new way)
-    let actualEmo = await Emotion.findById(id);
-    
+    let actualEmo = await Emotion.findById(id)
+
     // If not found, fall back to user ID method (old way for compatibility)
     if (!actualEmo) {
       const U = await User.findById(id)
       const e = await Emotion.find({ user: id })
       actualEmo = e[e.length - 1]
     }
-    
+
     if (!actualEmo) {
-      req.flash('error', 'Emotion data not found');
-      return res.redirect('/user/stats');
+      req.flash('error', 'Emotion data not found')
+      return res.redirect('/user/stats')
     }
 
     const pieJsonData = JSON.stringify({
@@ -574,12 +716,12 @@ app.get('/piechart/:id', async (req, res) => {
         (actualEmo.surprised || 0) / 1000
       ]
     })
-    
+
     res.render('templates/piechart.ejs', { pieJsonData, id })
   } catch (error) {
-    console.error('Error in piechart route:', error);
-    req.flash('error', 'Failed to load chart data');
-    res.redirect('/user/stats');
+    console.error('Error in piechart route:', error)
+    req.flash('error', 'Failed to load chart data')
+    res.redirect('/user/stats')
   }
 })
 
@@ -807,42 +949,50 @@ app.post('/resubmission/:id', upload.array('image'), async (req, res) => {
 // User Statistics Route
 app.get('/user/stats', isLoggedIn, isVerified, isActive, async (req, res) => {
   try {
-    const userId = req.user._id;
-    const emotions = await Emotion.find({ user: userId }).sort({ createdAt: -1 });
-    const user = await User.findById(userId);
-    
+    const userId = req.user._id
+    const emotions = await Emotion.find({ user: userId }).sort({
+      createdAt: -1
+    })
+    const user = await User.findById(userId)
+
     // Ensure emotions array exists and has valid data
-    const validEmotions = emotions.filter(emotion => emotion && emotion._id);
-    
-    res.render('templates/userstats.ejs', { emotions: validEmotions, user });
+    const validEmotions = emotions.filter(emotion => emotion && emotion._id)
+
+    res.render('templates/userstats.ejs', { emotions: validEmotions, user })
   } catch (error) {
-    console.error('Error fetching user stats:', error);
-    req.flash('error', 'Failed to load statistics');
-    res.redirect('/viewprofile');
+    console.error('Error fetching user stats:', error)
+    req.flash('error', 'Failed to load statistics')
+    res.redirect('/viewprofile')
   }
-});
+})
 
 // Delete Emotion Record Route
-app.delete('/emotion/:id', isLoggedIn, isVerified, isActive, async (req, res) => {
-  try {
-    const emotionId = req.params.id;
-    const emotion = await Emotion.findById(emotionId);
-    
-    // Check if the emotion belongs to the current user
-    if (!emotion || emotion.user.toString() !== req.user._id.toString()) {
-      req.flash('error', 'Unauthorized access');
-      return res.redirect('/user/stats');
+app.delete(
+  '/emotion/:id',
+  isLoggedIn,
+  isVerified,
+  isActive,
+  async (req, res) => {
+    try {
+      const emotionId = req.params.id
+      const emotion = await Emotion.findById(emotionId)
+
+      // Check if the emotion belongs to the current user
+      if (!emotion || emotion.user.toString() !== req.user._id.toString()) {
+        req.flash('error', 'Unauthorized access')
+        return res.redirect('/user/stats')
+      }
+
+      await Emotion.findByIdAndDelete(emotionId)
+      req.flash('success', 'Emotion record deleted successfully')
+      res.redirect('/user/stats')
+    } catch (error) {
+      console.error('Error deleting emotion:', error)
+      req.flash('error', 'Failed to delete emotion record')
+      res.redirect('/user/stats')
     }
-    
-    await Emotion.findByIdAndDelete(emotionId);
-    req.flash('success', 'Emotion record deleted successfully');
-    res.redirect('/user/stats');
-  } catch (error) {
-    console.error('Error deleting emotion:', error);
-    req.flash('error', 'Failed to delete emotion record');
-    res.redirect('/user/stats');
   }
-});
+)
 
 const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {

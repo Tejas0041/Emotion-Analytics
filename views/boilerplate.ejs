@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../styles/modern.css">
+    <link rel="stylesheet" href="../styles/logout-modal.css">
 </head>
 <body>
     <%- include('./templates/navbar.ejs') %>
@@ -54,25 +55,38 @@
     <script src="../scripts/app.js"></script>
     
     <script>
-    // Logout confirmation functions
-    function showLogoutConfirmation(event) {
+    // Global logout confirmation functions
+    window.showLogoutConfirmation = function(event) {
+        console.log('showLogoutConfirmation called');
         if (event) event.preventDefault();
+        
         const modal = document.getElementById('logoutModal');
+        console.log('Modal element:', modal);
+        
         if (modal) {
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            console.log('Modal should be visible now');
+        } else {
+            console.error('Modal not found!');
+            // Fallback: direct logout
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = '/logout';
+            }
         }
-    }
+    };
 
-    function hideLogoutConfirmation() {
+    window.hideLogoutConfirmation = function() {
         const modal = document.getElementById('logoutModal');
         if (modal) {
             modal.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
-    }
+    };
 
-    function confirmLogout() {
+    window.confirmLogout = function() {
+        console.log('confirmLogout called');
+        
         try {
             const logoutBtn = document.querySelector('#logoutModal .btn-danger');
             if (logoutBtn) {
@@ -83,23 +97,47 @@
             console.warn('Error updating logout button:', error);
         }
         
+        // Clear cookies before logout
+        const cookiesToClear = ['emotionanalytics', 'connect.sid', 'token'];
+        const expiredDate = new Date(0).toUTCString();
+        
+        cookiesToClear.forEach(function(cookieName) {
+            document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/";
+            document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=localhost";
+            document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=.localhost";
+        });
+        
+        // Clear all cookies (fallback)
+        document.cookie.split(";").forEach(function(c) { 
+            const cookieName = c.split("=")[0].trim();
+            document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/";
+            document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=localhost";
+        });
+        
+        // Clear storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        console.log('Cookies cleared, redirecting to logout');
+        
         // Redirect to logout
         window.location.href = '/logout';
-    }
+    };
 
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, setting up logout functions');
+        
         // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                hideLogoutConfirmation();
+                window.hideLogoutConfirmation();
             }
         });
         
-        // Make functions globally available
-        window.showLogoutConfirmation = showLogoutConfirmation;
-        window.hideLogoutConfirmation = hideLogoutConfirmation;
-        window.confirmLogout = confirmLogout;
+        // Test if modal exists
+        const modal = document.getElementById('logoutModal');
+        console.log('Modal found on DOM ready:', !!modal);
     });
     </script>
 </body>

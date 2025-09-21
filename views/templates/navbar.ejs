@@ -6,32 +6,29 @@
             </a>
             
             <div class="navbar-nav">
-                <% if(currentUser){ %>
+                <% if(currentUser && currentUser.username){ %>
+                    <!-- User is authenticated -->
                     <a class="nav-link" href="/home">
                         <i class="fas fa-home"></i> Home
                     </a>
-                <% } %>
-                <% if((currentUser) && (currentUser.username==='admin')){ %>
-                    <a class="nav-link" href="/homeadmin/all">
-                        <i class="fas fa-users"></i> Students
-                    </a>
-                <% } %>
-                
-                <%if(!currentUser){%>
-                    <a class="btn-modern btn-primary" href="/">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                <%}else{%>
+                    
+                    <% if(currentUser.username === 'admin'){ %>
+                        <a class="nav-link" href="/homeadmin/all">
+                            <i class="fas fa-users"></i> Students
+                        </a>
+                    <% } %>
+                    
                     <a class="nav-link" href="/viewprofile">
                         <i class="fas fa-user"></i> Profile
                     </a>
-                    <% if(currentUser.username==='admin'){ %>
+                    
+                    <% if(currentUser.username === 'admin'){ %>
                         <div style="position: relative; display: inline-block;">
                             <a class="btn-modern btn-secondary" href="/approval-request">
                                 <i class="fas fa-bell"></i> 
-                                Requests <% if(dot!=0){ %>(<%= dot %>)<% } %>
+                                Requests <% if(dot && dot != 0){ %>(<%= dot %>)<% } %>
                             </a>
-                            <% if(!(dot==0)){ %>
+                            <% if(dot && dot != 0){ %>
                                 <span style="position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; border: 2px solid white;"></span>
                             <% } %>
                         </div>
@@ -39,10 +36,77 @@
                             <i class="fas fa-times-circle"></i> Declined
                         </a>
                     <% } %>
-                    <a class="btn-modern btn-outline" href="#" onclick="showLogoutConfirmation(event)">
+                    
+                    <button class="btn-modern btn-outline" onclick="showLogoutConfirmation(event)">
                         <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </button>
+                <% } else { %>
+                    <!-- User is not authenticated -->
+                    <a class="btn-modern btn-primary" href="/login">
+                        <i class="fas fa-sign-in-alt"></i> Login
                     </a>
                 <% } %>
             </div>
         </div>
     </nav>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="logout-modal">
+        <div class="logout-modal-content">
+            <h3 class="logout-modal-title">Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div class="logout-modal-buttons">
+                <button class="logout-modal-btn secondary" onclick="document.getElementById('logoutModal').style.display='none'">Cancel</button>
+                <button class="logout-modal-btn primary" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLogoutConfirmation(event) {
+            if (event) event.preventDefault();
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+
+        function handleLogout() {
+            // Aggressive cookie clearing - clear all cookies with different path/domain combinations
+            const cookiesToClear = ['emotionanalytics', 'connect.sid', 'token'];
+            const expiredDate = new Date(0).toUTCString();
+            
+            // Clear specific cookies with multiple variations
+            cookiesToClear.forEach(function(cookieName) {
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=localhost";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=.localhost";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; secure";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; httpOnly";
+            });
+            
+            // Clear all cookies (fallback)
+            document.cookie.split(";").forEach(function(c) { 
+                const cookieName = c.split("=")[0].trim();
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=localhost";
+                document.cookie = cookieName + "=; expires=" + expiredDate + "; path=/; domain=.localhost";
+            });
+            
+            // Clear localStorage if any
+            localStorage.clear();
+            
+            // Clear sessionStorage if any
+            sessionStorage.clear();
+            
+            console.log('All cookies and storage cleared, redirecting to logout');
+            
+            // Redirect to logout
+            window.location.href = '/logout';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('logoutModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>

@@ -1,8 +1,29 @@
 // Modern App Enhancement Script - Safe Version
+// Global function for logout confirmation
+window.showLogoutConfirmation = function(event) {
+    event.preventDefault();
+    if (confirm('Are you sure you want to log out?')) {
+        // Clear any existing token
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        // Redirect to logout route
+        window.location.href = '/logout';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('App.js loaded successfully');
     
-    try {
+    // Protected paths that require authentication
+    const protectedPaths = ['/home', '/viewprofile', '/homeadmin'];
+    const currentPath = window.location.pathname;
+    
+    if (protectedPaths.some(path => currentPath.startsWith(path))) {
+        // Get token from cookie
+        const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+        if (!token) {
+            window.location.href = '/login';
+        }
+    }    try {
         // Add loading states to all forms
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {

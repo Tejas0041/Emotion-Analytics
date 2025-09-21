@@ -63,4 +63,25 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     btn.classList.add('loading');
     btn.innerHTML = '<div class="loading"></div> <span>Signing In...</span>';
 });
+
+// Check for logout success message
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout') === 'success') {
+        // Show a temporary success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'alert alert-success';
+        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 1rem; background: #10b981; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Successfully signed out';
+        document.body.appendChild(successMsg);
+        
+        // Remove message after 3 seconds
+        setTimeout(() => {
+            successMsg.remove();
+        }, 3000);
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
 </script>
