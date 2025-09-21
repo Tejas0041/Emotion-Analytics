@@ -2,37 +2,34 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
 
-const express = require('express')
-const app = express()
-const methodOverride = require('method-override')
-const mongoose = require('mongoose')
-const path = require('path')
-const ejsMate = require('ejs-mate')
+const express= require('express');
+const app= express();
+const methodOverride= require('method-override');
+const mongoose= require('mongoose');
+const path= require('path');
+const ejsMate= require('ejs-mate');
+const session= require('express-session');
+const flash= require('connect-flash');
+const User= require('./models/userschema.js');
+const Emotion= require('./models/emotionschema.js');
+const {cloudinary}= require('./cloudinary/cloudinary.js');
+const multer= require('multer');
+const {storage} = require('./cloudinary/cloudinary.js');
+const upload= multer({storage});
+const passport= require('passport');
+const LocalStrategy= require('passport-local');
+const MongoDBStore= require("connect-mongo");
+const cors = require('cors');
+const sgMail = require('@sendgrid/mail');
+const sgMailApi= process.env.SENDGRID_API;
+var OTP=0;
+const faceapi = require('face-api.js');
+const modelsDirectory = path.join(__dirname, 'public', 'model');
 
-// Performance optimizations
-app.set('trust proxy', 1)
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+const httpProxy = require('http-proxy');
+const proxy = httpProxy.createProxyServer();
 
-// Add compression for better performance
-app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=86400') // 1 day cache for static assets
-  next()
-})
-const session = require('express-session')
-const flash = require('connect-flash')
-const User = require('./models/userschema.js')
-const Emotion = require('./models/emotionschema.js')
-const { storage } = require('./cloudinary/cloudinary.js')
-const multer = require('multer')
-const upload = multer({ storage: storage })
-const passport = require('passport')
-const LocalStrategy = require('passport-local')
-const MongoDBStore = require('connect-mongo')
-const sgMail = require('@sendgrid/mail')
-const sgMailApi = process.env.SENDGRID_API
-
-const secret = process.env.SECRET || 'thisshouldbeabettersecret'
+const secret= process.env.SECRET || 'thisshouldbeabettersecret';
 // const dbUrl= 'mongodb://localhost:27017/emotion-analytics';
 const dbUrl = process.env.DB_URL
 
@@ -146,34 +143,21 @@ app.use(passport.session())
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
-passport.use(new LocalStrategy(User.authenticate()))
-var k = 0
+passport.use(new LocalStrategy(User.authenticate()));
+var k=0;
 
-function generateRandomString (length) {
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  const charactersLength = characters.length
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charactersLength)
-    result += characters[randomIndex]
-  }
-  return result
-}
+app.use('/face-api', (req, res) => {
+    proxy.web(req, res, { target: 'http://face-api-server.com' });
+});
 
-app.use((req, res, next) => {
-  // Ensure proper session handling
-  if (req.session && !req.user && req.session.passport) {
-    // Clear stale passport session data
-    delete req.session.passport;
-  }
-  
-  res.locals.currentUser = req.user
-  res.locals.success = req.flash('success')
-  res.locals.error = req.flash('error')
-  res.locals.dot = k
-  next()
-})
+app.use((req, res, next)=>{
+    res.locals.currentUser= req.user;
+    res.locals.success= req.flash('success');
+    res.locals.error= req.flash('error');
+    res.locals.dot= k;
+    next();
+});
+
 
 app.get('/', (req, res) => {
   // Check if user is properly authenticated
@@ -196,20 +180,16 @@ app.get('/home', isLoggedIn, isVerified, isActive, async (req, res) => {
 app.get('/homeadmin/:filter', isAdmin, async (req, res) => {
   const { filter } = req.params
 
-  let query = {}
-  if (filter === 'all') {
-    query = { verified: true }
-  } else if (filter === 'active') {
-    query = { active: true, verified: true }
-  } else if (filter === 'deactive') {
-    query = { active: false, verified: true }
-  }
+    if(filter=='all'){
+        var users= await User.find({verified: true});
+    }else if(filter=='active'){
+        var users= await User.find({active: true});
+    }else if(filter=='deactive'){
+        var users= await User.find({active: false});
+    }
 
-  const users = await User.find(query)
-    .select('fullname username personalemail semester active')
-    .lean()
-  res.render('templates/homeadmin.ejs', { users })
-})
+    res.render('templates/homeadmin.ejs', {users});
+});
 
 app.get(
   '/viewprofile/:id',
@@ -448,111 +428,47 @@ app.put(
   }
 )
 
-app.post('/stats', isLoggedIn, isVerified, isActive, async (req, res) => {
-  try {
-    const emotion = req.body
-    console.log('Received emotion data:', emotion);
-    
-    // Validate that we have some emotion data
-    const totalTime = parseInt(emotion.total) || 0;
-    if (totalTime === 0) {
-      req.flash('error', 'No emotion data detected. Please try again and ensure your face is visible.');
-      return res.redirect('/home');
-    }
-    
-    const newEmo = new Emotion({
-      happy: parseInt(emotion.happy) || 0,
-      neutral: parseInt(emotion.neutral) || 0,
-      sad: parseInt(emotion.sad) || 0,
-      angry: parseInt(emotion.angry) || 0,
-      fearful: parseInt(emotion.fearful) || 0,
-      disgusted: parseInt(emotion.disgusted) || 0,
-      surprised: parseInt(emotion.surprised) || 0,
-      total: totalTime,
-      user: req.user._id
-    });
+app.post('/stats', isLoggedIn, isVerified, isActive, async(req, res)=>{
+    const emotion= req.body;
+    const newEmo= new Emotion(req.body);
 
-    const u = await User.findById(req.user._id)
-    u.emotion++
-    await u.save()
-    
-    await newEmo.save()
-    console.log('Emotion data saved:', newEmo);
-    
-    res.render('templates/stats.ejs', { emotion: newEmo, id: newEmo._id })
-  } catch (error) {
-    console.error('Error saving emotion data:', error);
-    req.flash('error', 'Failed to save emotion analysis. Please try again.');
-    res.redirect('/home');
-  }
-})
+    newEmo.user= req.user._id;
 
-app.get('/bargraph/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    
-    // Try to find emotion by ID first (new way)
-    let actualEmo = await Emotion.findById(id);
-    
-    // If not found, fall back to user ID method (old way for compatibility)
-    if (!actualEmo) {
-      const U = await User.findById(id)
-      const e = await Emotion.find({ user: id })
-      actualEmo = e[e.length - 1]
-    }
-    
-    if (!actualEmo) {
-      req.flash('error', 'Emotion data not found');
-      return res.redirect('/user/stats');
-    }
+    const u= await User.findById(newEmo.user);
+    u.emotion++;
+
+    u.save();
+
+    const id= newEmo.user;
+
+    await newEmo.save();
+    res.render('templates/stats.ejs', {emotion, id});
+});
+
+app.get('/bargraph/:id', async(req, res)=>{
+    const {id}= req.params;
+    const U= await User.findById(id);
+    const e= await Emotion.find({user: id});
+    var actualEmo= e[U.emotion-1];
 
     const jsonData = JSON.stringify({
-      labels: [
-        'happy',
-        'neutral',
-        'sad',
-        'angry',
-        'fearful',
-        'disgusted',
-        'surprised'
-      ],
-      values: [
-        (actualEmo.happy || 0) / 1000,
-        (actualEmo.neutral || 0) / 1000,
-        (actualEmo.sad || 0) / 1000,
-        (actualEmo.angry || 0) / 1000,
-        (actualEmo.fearful || 0) / 1000,
-        (actualEmo.disgusted || 0) / 1000,
-        (actualEmo.surprised || 0) / 1000
-      ]
-    })
+        labels: ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'],
+        values: [actualEmo.happy/1000, actualEmo.neutral/1000, actualEmo.sad/1000, actualEmo.angry/1000, actualEmo.fearful/1000, actualEmo.disgusted/1000, actualEmo.surprised/1000] // Example values
+    });
 
-    res.render('templates/bargraph.ejs', { jsonData, id })
-  } catch (error) {
-    console.error('Error in bargraph route:', error);
-    req.flash('error', 'Failed to load chart data');
-    res.redirect('/user/stats');
-  }
+
+
+    // const data = JSON.stringify(dta);
+
+    // return res.send(data);
+    res.render('templates/bargraph.ejs', {jsonData});
 })
 
-app.get('/piechart/:id', async (req, res) => {
-  try {
-    const { id } = req.params
-    
-    // Try to find emotion by ID first (new way)
-    let actualEmo = await Emotion.findById(id);
-    
-    // If not found, fall back to user ID method (old way for compatibility)
-    if (!actualEmo) {
-      const U = await User.findById(id)
-      const e = await Emotion.find({ user: id })
-      actualEmo = e[e.length - 1]
-    }
-    
-    if (!actualEmo) {
-      req.flash('error', 'Emotion data not found');
-      return res.redirect('/user/stats');
-    }
+app.get('/piechart/:id', async(req, res)=>{
+    const {id}= req.params;
+    const U= await User.findById(id);
+    const e= await Emotion.find({user: id});
+    var actualEmo= e[U.emotion-1];
 
     const pieJsonData = JSON.stringify({
       labels: [
@@ -738,113 +654,61 @@ app.post('/change-password/:id', async (req, res) => {
   }
 })
 
-app.post('/update-password/:id', async (req, res, next) => {
-  const { id } = req.params
+app.post('/update-password/:id', async(req, res, next)=>{
+    const {id}= req.params;
 
-  const user = await User.findById(id).select('+hash')
+    const user = await User.findById(id).select('+hash');
 
-  const data = generateRandomString(5 + Math.ceil(Math.random() * 10))
+    const data= 'fake';
 
-  const temp = new User({
-    fullname: data,
-    username: data,
-    personalemail: data,
-    gsuite: data,
-    semester: data,
-    mobilenumber: data,
-    password: req.body.password_cp
-  })
-  const newUser = await User.register(temp, req.body.password_cp)
+    const temp= new User({fullname: data, username: data, personalemail: data, gsuite: data, semester: data, mobilenumber: data, password: req.body.password_cp});
+    const newUser= await User.register(temp, req.body.password_cp);
 
-  const newHashedPass = newUser.hash
-  const newSalt = newUser.salt
+    const newHashedPass= newUser.hash;
+    const newSalt= newUser.salt;
 
-  await User.findOneAndDelete({ username: data })
+    await User.findOneAndDelete({username: data});
 
-  try {
-    user.hash = newHashedPass
-    user.salt = newSalt
-    user.save()
-    req.flash(
-      'success',
-      'Successfully changed the password. Now Login with new Password'
-    )
-    res.redirect('/login')
-  } catch (e) {
-    console.log('CAUGHT ERR')
-    console.log(e)
-  }
-})
-
-app.post('/resubmission/:id', upload.array('image'), async (req, res) => {
-  const { id } = req.params
-  const u = req.body
-  const user = await User.findById(id)
-  user.fullname = u.fullname
-  user.username = u.username
-  user.semester = u.semester
-  user.personalemail = u.personalemail
-  user.mobilenumer = u.mobilenumber
-  user.remark = '!ok'
-  const pic = user.image
-
-  if (req.files) {
-    const img = req.files.map(f => ({ url: f.path, filename: f.filename }))
-    user.image = img
-  }
-
-  if (req.files.length === 0) {
-    user.image = pic
-  }
-
-  await user.save()
-  k += 1
-
-  req.flash('success', 'Successfully updated your registered data')
-  res.redirect(`/approval/${id}`)
-})
-
-// User Statistics Route
-app.get('/user/stats', isLoggedIn, isVerified, isActive, async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const emotions = await Emotion.find({ user: userId }).sort({ createdAt: -1 });
-    const user = await User.findById(userId);
-    
-    // Ensure emotions array exists and has valid data
-    const validEmotions = emotions.filter(emotion => emotion && emotion._id);
-    
-    res.render('templates/userstats.ejs', { emotions: validEmotions, user });
-  } catch (error) {
-    console.error('Error fetching user stats:', error);
-    req.flash('error', 'Failed to load statistics');
-    res.redirect('/viewprofile');
-  }
-});
-
-// Delete Emotion Record Route
-app.delete('/emotion/:id', isLoggedIn, isVerified, isActive, async (req, res) => {
-  try {
-    const emotionId = req.params.id;
-    const emotion = await Emotion.findById(emotionId);
-    
-    // Check if the emotion belongs to the current user
-    if (!emotion || emotion.user.toString() !== req.user._id.toString()) {
-      req.flash('error', 'Unauthorized access');
-      return res.redirect('/user/stats');
+    try{
+        user.hash= newHashedPass;
+        user.salt= newSalt;
+        user.save();
+        req.flash('success', "Successfully changed the password. Now Login with new Password")
+        res.redirect('/login');
+    }catch(e){
+        console.log(e);
     }
-    
-    await Emotion.findByIdAndDelete(emotionId);
-    req.flash('success', 'Emotion record deleted successfully');
-    res.redirect('/user/stats');
-  } catch (error) {
-    console.error('Error deleting emotion:', error);
-    req.flash('error', 'Failed to delete emotion record');
-    res.redirect('/user/stats');
-  }
 });
 
-const PORT = process.env.PORT || 8000
-app.listen(PORT, () => {
-  console.log(`app started successfully at port ${PORT}`)
-})
+app.post('/resubmission/:id',upload.array('image'), async(req, res)=>{
+    const {id}= req.params;
+    const u= req.body;
+    const user= await User.findById(id);
+    user.fullname= u.fullname;
+    user.username= u.username;
+    user.semester= u.semester;
+    user.personalemail= u.personalemail;
+    user.mobilenumer= u.mobilenumber;
+    user.remark= "!ok";
+    const pic= user.image;
+
+
+    if(req.files){
+        const img= req.files.map(f=>({url: f.path, filename: f.filename}));
+        user.image= img;
+    }
+
+    if(req.files.length===0){
+        user.image=pic;
+    }
+
+    await user.save();
+    k+=1;
+
+    req.flash('success', 'Successfully updated your registered data');
+    res.redirect(`/approval/${id}`);
+});
+
+app.listen(8080, ()=>{
+    console.log('app started successfully at port 8080');
+});
