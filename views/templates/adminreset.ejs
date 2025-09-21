@@ -1,0 +1,303 @@
+<% layout('layout/../boilerplate.ejs') %>
+
+<div style="padding: 2rem 0; min-height: 100vh; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+    <div class="container" style="max-width: 500px; margin: 0 auto; padding: 0 1rem;">
+        <!-- Header Section -->
+        <div class="text-center mb-5">
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: white;"></i>
+                </div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    Admin Reset
+                </h1>
+            </div>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin: 0; font-weight: 500;">
+                Reset administrator password securely
+            </p>
+        </div>
+
+        <!-- Reset Form Card -->
+        <div class="modern-card" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); padding: 3rem;">
+            <!-- Security Notice -->
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 1.5rem; border-radius: var(--border-radius-lg); border: 1px solid #f59e0b; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 1.3rem;"></i>
+                    <h3 style="margin: 0; color: #92400e; font-weight: 700; font-size: 1.1rem;">Security Notice</h3>
+                </div>
+                <p style="margin: 0; color: #92400e; font-size: 0.95rem; line-height: 1.5;">
+                    This action will permanently change the administrator password. Ensure you have proper authorization before proceeding.
+                </p>
+            </div>
+
+            <form action="/admin/reset-password" method="POST" class="validated-form" novalidate id="resetForm">
+                <!-- Current Username Section -->
+                <div class="form-section">
+                    <h4 class="form-section-title">
+                        <i class="fas fa-user-shield"></i> Administrator Verification
+                    </h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="currentUsername">
+                            <i class="fas fa-id-badge" style="color: var(--error-color); margin-right: 0.5rem;"></i>
+                            Current Admin Username
+                        </label>
+                        <input class="form-input enhanced" type="text" name="currentUsername" id="currentUsername" autofocus required placeholder="Enter current admin username">
+                        <div class="invalid-feedback">Please enter the current admin username</div>
+                        <small class="form-help">Enter the username of the administrator account to reset</small>
+                    </div>
+                </div>
+
+                <!-- New Password Section -->
+                <div class="form-section">
+                    <h4 class="form-section-title">
+                        <i class="fas fa-key"></i> New Password Setup
+                    </h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">
+                            <i class="fas fa-lock" style="color: var(--error-color); margin-right: 0.5rem;"></i>
+                            New Password
+                        </label>
+                        <input class="form-input enhanced" type="password" name="newPassword" id="newPassword" required placeholder="Create a strong password">
+                        <div class="invalid-feedback">Please enter a new password</div>
+                        <small class="form-help">Use a strong password with at least 8 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">
+                            <i class="fas fa-check-double" style="color: var(--error-color); margin-right: 0.5rem;"></i>
+                            Confirm New Password
+                        </label>
+                        <input class="form-input enhanced" type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm your new password">
+                        <div class="invalid-feedback">Please confirm your password</div>
+                        <small class="form-help">Re-enter the password to confirm</small>
+                    </div>
+
+                    <!-- Password Strength Indicator -->
+                    <div id="passwordStrength" style="margin-top: 1rem; display: none;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">Password Strength:</span>
+                            <span id="strengthText" style="font-size: 0.9rem; font-weight: 600;"></span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: var(--border-light); border-radius: 2px; overflow: hidden;">
+                            <div id="strengthBar" style="height: 100%; width: 0%; transition: all 0.3s ease; border-radius: 2px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-light);">
+                    <button type="submit" class="btn-modern btn-danger" id="resetBtn" style="padding: 1rem 2.5rem; font-size: 1.1rem; background: linear-gradient(135deg, #dc2626, #991b1b);">
+                        <i class="fas fa-shield-alt"></i> 
+                        <span>Reset Password</span>
+                    </button>
+                    <a href="/login/admin" class="btn-modern btn-secondary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Admin Login
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--error-color);
+}
+
+.form-section-title i {
+    color: var(--error-color);
+    font-size: 1rem;
+}
+
+.form-input.enhanced {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    transition: all 0.3s ease;
+    background: var(--surface);
+}
+
+.form-input.enhanced:focus {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-help {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-section-title {
+        font-size: 1.1rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const resetForm = document.getElementById('resetForm');
+    const resetBtn = document.getElementById('resetBtn');
+    const passwordStrength = document.getElementById('passwordStrength');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let feedback = '';
+        
+        if (password.length >= 8) strength += 1;
+        if (password.match(/[a-z]/)) strength += 1;
+        if (password.match(/[A-Z]/)) strength += 1;
+        if (password.match(/[0-9]/)) strength += 1;
+        if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+        
+        switch (strength) {
+            case 0:
+            case 1:
+                feedback = 'Very Weak';
+                strengthBar.style.background = '#ef4444';
+                strengthBar.style.width = '20%';
+                break;
+            case 2:
+                feedback = 'Weak';
+                strengthBar.style.background = '#f59e0b';
+                strengthBar.style.width = '40%';
+                break;
+            case 3:
+                feedback = 'Fair';
+                strengthBar.style.background = '#eab308';
+                strengthBar.style.width = '60%';
+                break;
+            case 4:
+                feedback = 'Good';
+                strengthBar.style.background = '#22c55e';
+                strengthBar.style.width = '80%';
+                break;
+            case 5:
+                feedback = 'Strong';
+                strengthBar.style.background = '#16a34a';
+                strengthBar.style.width = '100%';
+                break;
+        }
+        
+        strengthText.textContent = feedback;
+        strengthText.style.color = strengthBar.style.background;
+        
+        return strength;
+    }
+
+    // Password input handler
+    newPasswordInput.addEventListener('input', function() {
+        const password = this.value;
+        
+        if (password.length > 0) {
+            passwordStrength.style.display = 'block';
+            checkPasswordStrength(password);
+        } else {
+            passwordStrength.style.display = 'none';
+        }
+        
+        // Reset confirm password validation
+        if (confirmPasswordInput.value) {
+            validatePasswordMatch();
+        }
+    });
+
+    // Password confirmation validation
+    function validatePasswordMatch() {
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (newPassword !== confirmPassword) {
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+            confirmPasswordInput.style.borderColor = 'var(--error-color)';
+            return false;
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+            confirmPasswordInput.style.borderColor = 'var(--success-color)';
+            return true;
+        }
+    }
+
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+
+    // Form submission handler
+    resetForm.addEventListener('submit', function(e) {
+        if (!validatePasswordMatch()) {
+            e.preventDefault();
+            return;
+        }
+        
+        const passwordStrength = checkPasswordStrength(newPasswordInput.value);
+        if (passwordStrength < 3) {
+            if (!confirm('Your password is weak. Are you sure you want to continue?')) {
+                e.preventDefault();
+                return;
+            }
+        }
+        
+        resetBtn.classList.add('loading');
+        resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Resetting Password...</span>';
+    });
+
+    // Enhanced form validation
+    document.querySelectorAll('.form-input.enhanced').forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.checkValidity() && this !== confirmPasswordInput) {
+                this.style.borderColor = 'var(--success-color)';
+            } else if (!this.checkValidity()) {
+                this.style.borderColor = 'var(--error-color)';
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this !== confirmPasswordInput && this !== newPasswordInput) {
+                this.style.borderColor = 'var(--border-light)';
+            }
+        });
+    });
+});
+</script>

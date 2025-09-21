@@ -5,27 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emotion Analytics</title>
     <link rel="icon" type="image/png" href="/emotion.png" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-    <link rel="stylesheet" href="../styles/boilerplate.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../styles/modern.css">
 </head>
-<body style="background: linear-gradient(to bottom, grey, rgb(204, 203, 203));">
-
+<body>
     <%- include('./templates/navbar.ejs') %>
     <%- include('./templates/flash.ejs') %>
 
-    <main>
-        <%- body -%>
+    <main class="main-content page-transition">
+        <div class="container">
+            <%- body -%>
+        </div>
     </main>
 
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="custom-modal" style="display: none;">
+        <div class="modal-overlay" onclick="hideLogoutConfirmation()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h3>Confirm Sign Out</h3>
+                <p>Are you sure you want to sign out of your account?</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modern btn-outline" onclick="hideLogoutConfirmation()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn-modern btn-danger" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="modern-footer">
+        <div class="footer-content">
+            <p class="footer-text">&copy; 2024 Emotion Analytics. All rights reserved</p>
+            <p class="footer-credit">Made by Tejas Pawar</p>
+        </div>
+    </footer>
+
     <script src="../scripts/validateform.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="../scripts/app.js"></script>
+    
+    <script>
+    // Logout confirmation functions
+    function showLogoutConfirmation(event) {
+        if (event) event.preventDefault();
+        const modal = document.getElementById('logoutModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function hideLogoutConfirmation() {
+        const modal = document.getElementById('logoutModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function confirmLogout() {
+        try {
+            const logoutBtn = document.querySelector('#logoutModal .btn-danger');
+            if (logoutBtn) {
+                logoutBtn.classList.add('loading');
+                logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing Out...';
+            }
+        } catch (error) {
+            console.warn('Error updating logout button:', error);
+        }
+        
+        // Redirect to logout
+        window.location.href = '/logout';
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideLogoutConfirmation();
+            }
+        });
+        
+        // Make functions globally available
+        window.showLogoutConfirmation = showLogoutConfirmation;
+        window.hideLogoutConfirmation = hideLogoutConfirmation;
+        window.confirmLogout = confirmLogout;
+    });
+    </script>
 </body>
-<footer class="bg-dark">
-    <center>
-        <div style="color: white; min-height: 5vh;">&copy; 2024 Emotion Analytics. All rights reserved</div>
-    </center>
-</footer>
 </html>

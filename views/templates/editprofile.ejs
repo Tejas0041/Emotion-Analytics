@@ -1,66 +1,741 @@
-<% layout('layout/../boilerplate.ejs') %>
-
-<div style="background: linear-gradient(to bottom, grey, rgb(204, 203, 203));">
-    <form action="/profile/edit/<%= u._id %>?_method=PUT" method="POST" enctype="multipart/form-data" class="validated-form mt-3" novalidate>
-        <div class="" style="display: grid; justify-content: center; align-items: center; font-size: 21px;">
-            <center><h2 style="font-size: 37px; font-weight: bold;" class="mb-1 mt-3">Edit Profile</h2></center>
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="fullname">Full Name: </label>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="fullname" id="fullname" value="<%= u.fullname %>" required>
-                <div class="invalid-feedback">
-                    Please enter Name
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <% if(currentUser.username==='Admin'){ %>
-                    <label for="username">Admin Id: </label>
-                <% } else { %>
-                    <label for="username">Enrollment Number: </label>
-                <% } %>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px; cursor: not-allowed;" type="text" name="username" id="username" value="<%= u.username %>"  disabled required>
-                <div class="invalid-feedback">
-                    Please enter enrollment number
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="Semester">Semester: </label>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="semester" id="semester" value="<%= u.semester %>" required>
-                <div class="invalid-feedback">
-                    Please enter your current semester
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="personalemail">Personal Email Id: </label>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="email" name="personalemail" id="personalemail" value="<%= u.personalemail %>" required>
-                <div class="invalid-feedback">
-                    Please add personal email
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="gsuite">Gsuite Id: </label>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px; cursor: not-allowed;" type="email" name="gsuite" id="gsuite" value="<%= u.gsuite %>" disabled required>
-                <div class="invalid-feedback">
-                    Please add gsuite ID
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label" for="mobilenumber">Contact Number: </label>
-                <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="mobilenumber" id="mobilenumer" value="<%= u.mobilenumber %>" required>
-                <div class="invalid-feedback">
-                    Please enter your contact number
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="image">Add Image: </label>
-                <input type="file" name="image" id="image" style="border: 1px solid black; max-width: 298px;" class="form-control">
-            </div>
-
-            <button type="submit" class="btn btn-success mb-3" style="font-size: 18px;">Edit</button>
-            <a class="btn btn-outline-dark mb-4" href="/viewprofile" type="submit">Back to Profile</a>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Emotion Analytics</title>
+    <link rel="icon" type="image/png" href="/emotion.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #0f172a;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            margin-bottom: 1rem;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .form-card {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .profile-preview {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-image-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .camera-button {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 35px;
+            height: 35px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .camera-button:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .section:last-of-type {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #3b82f6;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+        
+        .form-input {
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            width: 100%;
+            font-family: inherit;
+        }
+        
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+            outline: none;
+        }
+        
+        .form-input:disabled {
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+        
+        .form-help {
+            display: block;
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #3b82f6;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem 0.5rem;
+            }
+            
+            .form-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/home" class="navbar-brand">
+                <img src="/emotion.png" alt="Logo" style="width: 24px; height: 24px;">
+                EMOTION ANALYTICS
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/home" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="/viewprofile" class="nav-link"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+            </ul>
         </div>
-    </form>
+    </nav>
 
-</div>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-icon">
+                <i class="fas fa-user-edit" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h1>Edit Profile</h1>
+            <p>Update your account information and preferences</p>
+        </div>
+
+        <!-- Edit Form Card -->
+        <div class="form-card">
+            <!-- Current Profile Preview -->
+            <div class="profile-preview">
+                <div class="profile-image-container">
+                    <img src="<%= u.image[0].thumbnail %>" 
+                         class="profile-image"
+                         alt="Current Profile Picture" 
+                         id="currentProfileImage">
+                    <div class="camera-button" onclick="document.getElementById('image').click();">
+                        <i class="fas fa-camera" style="color: white; font-size: 0.9rem;"></i>
+                    </div>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; color: #0f172a; margin: 0;">
+                    <% if(currentUser.username==='admin'){ %>Admin Profile<% } else { %>Student Profile<% } %>
+                </h3>
+            </div>
+
+            <form action="/profile/edit/<%= u._id %>?_method=PUT" method="POST" enctype="multipart/form-data" id="editForm">
+                <!-- Personal Information Section -->
+                <div class="section">
+                    <h4 class="section-title">
+                        <i class="fas fa-user" style="color: #3b82f6;"></i> Personal Information
+                    </h4>
+                    
+                    <div class="grid">
+                        <div class="form-group">
+                            <label class="form-label" for="fullname">
+                                <i class="fas fa-user" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                                Full Name
+                            </label>
+                            <input class="form-input" type="text" name="fullname" id="fullname" value="<%= u.fullname %>" required placeholder="Enter your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="username">
+                                <i class="fas fa-id-card" style="color: #94a3b8; margin-right: 0.5rem;"></i>
+                                <% if(currentUser.username==='admin'){ %>Admin ID<% } else { %>Enrollment Number<% } %>
+                            </label>
+                            <input class="form-input" type="text" name="username" id="username" value="<%= u.username %>" disabled>
+                            <small class="form-help">This field cannot be changed</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="semester">
+                            <i class="fas fa-graduation-cap" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                            Current Semester
+                        </label>
+                        <input class="form-input" type="text" name="semester" id="semester" value="<%= u.semester %>" required placeholder="Enter current semester">
+                    </div>
+                </div>
+
+                <!-- Contact Information Section -->
+                <div class="section">
+                    <h4 class="section-title">
+                        <i class="fas fa-address-book" style="color: #3b82f6;"></i> Contact Information
+                    </h4>
+                    
+                    <div class="grid">
+                        <div class="form-group">
+                            <label class="form-label" for="personalemail">
+                                <i class="fas fa-envelope" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                                Personal Email
+                            </label>
+                            <input class="form-input" type="email" name="personalemail" id="personalemail" value="<%= u.personalemail %>" required placeholder="Enter personal email">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="mobilenumber">
+                                <i class="fas fa-phone" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                                Contact Number
+                            </label>
+                            <input class="form-input" type="tel" name="mobilenumber" id="mobilenumber" value="<%= u.mobilenumber %>" required placeholder="Enter contact number">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gsuite">
+                            <i class="fas fa-at" style="color: #94a3b8; margin-right: 0.5rem;"></i>
+                            G Suite ID
+                        </label>
+                        <input class="form-input" type="email" name="gsuite" id="gsuite" value="<%= u.gsuite %>" disabled>
+                        <small class="form-help">This field cannot be changed</small>
+                    </div>
+                </div>
+
+                <!-- Profile Image Section -->
+                <div class="section">
+                    <h4 class="section-title">
+                        <i class="fas fa-camera" style="color: #3b82f6;"></i> Profile Image
+                    </h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="image">
+                            <i class="fas fa-upload" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                            Update Profile Picture
+                        </label>
+                        <input class="form-input" type="file" name="image" id="image" accept="image/*" style="padding: 1rem;">
+                        <small class="form-help">Choose a new image to update your profile picture. Leave empty to keep current image.</small>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success" id="editBtn">
+                        <i class="fas fa-save"></i> 
+                        <span>Save Changes</span>
+                    </button>
+                    <a href="/viewprofile" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Profile
+                    </a>
+                    <button type="reset" class="btn btn-outline">
+                        <i class="fas fa-undo"></i> Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.getElementById('editForm');
+            const editBtn = document.getElementById('editBtn');
+            const imageInput = document.getElementById('image');
+            const currentProfileImage = document.getElementById('currentProfileImage');
+
+            // Form submission handler
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    if (editBtn) {
+                        editBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Saving Changes...</span>';
+                        editBtn.disabled = true;
+                    }
+                });
+            }
+
+            // Image preview functionality
+            if (imageInput && currentProfileImage) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            currentProfileImage.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+<style>
+/* Responsive Grid */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+    
+    div[style*="max-width: 900px"] {
+        padding: 0 0.5rem !important;
+    }
+}
+
+/* Input Focus Effects */
+input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    transform: translateY(-1px) !important;
+    outline: none !important;
+}
+
+/* Button Hover Effects */
+button:hover, a[style*="background"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Loading Animation */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Validation */
+.invalid-feedback {
+    display: none;
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.is-invalid {
+    border-color: #ef4444 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editForm');
+    const editBtn = document.getElementById('editBtn');
+    const imageInput = document.getElementById('image');
+    const currentProfileImage = document.getElementById('currentProfileImage');
+
+    // Form submission handler
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            if (editBtn && !editBtn.classList.contains('loading')) {
+                editBtn.classList.add('loading');
+                editBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Saving Changes...</span>';
+            }
+        });
+    }
+
+    // Image preview functionality
+    if (imageInput && currentProfileImage) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentProfileImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Form validation
+    const inputs = document.querySelectorAll('input[required]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.style.borderColor = '#22c55e';
+            } else {
+                this.classList.add('is-invalid');
+                this.style.borderColor = '#ef4444';
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            this.style.borderColor = '#f1f5f9';
+        });
+    });
+
+    // Reset form handler
+    const resetBtn = document.querySelector('button[type="reset"]');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid');
+                input.style.borderColor = '#f1f5f9';
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.form-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.form-section-title i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.form-input.enhanced {
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    transition: all 0.3s ease;
+    background: var(--surface);
+}
+
+.form-input.enhanced:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-input.disabled {
+    background: var(--background-secondary);
+    border: 2px solid var(--border-light);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    padding: 1rem 1.25rem;
+    border-radius: var(--border-radius-lg);
+}
+
+.form-help {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-section-title {
+        font-size: 1.1rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+}
+</style>
+
+<script>
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('editBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = '<div class="loading"></div> <span>Saving Changes...</span>';
+});
+
+// Image preview functionality
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('currentProfileImage').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Form validation enhancements
+document.querySelectorAll('.form-input.enhanced').forEach(input => {
+    input.addEventListener('blur', function() {
+        if (this.checkValidity()) {
+            this.style.borderColor = 'var(--success-color)';
+        } else {
+            this.style.borderColor = 'var(--error-color)';
+        }
+    });
+    
+    input.addEventListener('input', function() {
+        this.style.borderColor = 'var(--border-light)';
+    });
+});
+</script>

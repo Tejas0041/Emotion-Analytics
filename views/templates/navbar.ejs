@@ -1,43 +1,47 @@
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid d-flex">
-            <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button> -->
-            <a class="navbar-brand" style="margin-left: 20px;" href="#">
-                <img src="/emotion.png" height="27px" alt="" style="margin-right: 5px;">
-                <b>EMOTION ANALYTICS</b>
+    <nav class="modern-navbar">
+        <div class="navbar-container">
+            <a class="navbar-brand" href="/">
+                <img src="/emotion.png" height="32" alt="Emotion Analytics">
+                EMOTION ANALYTICS
             </a>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav" style="font-size: 18px; margin-left: 30px;">
-                    <% if(currentUser){ %>
-                        <a class="nav-link" href="/home" style="margin-right: 10px;">Home</a>
-                    <% } %>
-                    <% if((currentUser) && (currentUser.username==='Admin')){ %>
-                        <a class="nav-link" href="/homeadmin/all">Students List</a>
-                    <% } %>
-                </div>
-            </div>
-            <div class="navbar-nav ms-auto">
+            
+            <div class="navbar-nav">
+                <% if(currentUser){ %>
+                    <a class="nav-link" href="/home">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                <% } %>
+                <% if((currentUser) && (currentUser.username==='admin')){ %>
+                    <a class="nav-link" href="/homeadmin/all">
+                        <i class="fas fa-users"></i> Students
+                    </a>
+                <% } %>
+                
                 <%if(!currentUser){%>
-                    <a class="btn btn-outline-light navbar" href="/" style="padding: 4px 15px;">Login</a>
+                    <a class="btn-modern btn-primary" href="/">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
                 <%}else{%>
-                    <a class="nav-link" href="/viewprofile" style="margin-right: 12px;">View Profile</a>
-                    <% if(currentUser.username==='Admin'){ %>
-                        <!-- <span style="height: 5px; width: 5px; background-color: red; border-radius: 50%;"></span>
-                        <a class="nav-link" href="/approval-request" style="margin-right: 12px;">Approval Request</a> -->
-                        <form action="/approval-request" method="get">
-                            <button type="submit" class="btn btn-outline-light position-relative" style="margin-right: 25px;">
-                                Approval requests <% if(dot!=0){ %>(<%= dot %>)<% } %>
-                                <% if(!(dot==0)){ %>
-                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
-                                <% } %>
-                            </button>
-                        </form>
-                        <a href="/declined-request" class="btn btn-outline-light" style="margin-right: 25px;">
-                            Declined Requests
+                    <a class="nav-link" href="/viewprofile">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <% if(currentUser.username==='admin'){ %>
+                        <div style="position: relative; display: inline-block;">
+                            <a class="btn-modern btn-secondary" href="/approval-request">
+                                <i class="fas fa-bell"></i> 
+                                Requests <% if(dot!=0){ %>(<%= dot %>)<% } %>
+                            </a>
+                            <% if(!(dot==0)){ %>
+                                <span style="position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; border: 2px solid white;"></span>
+                            <% } %>
+                        </div>
+                        <a href="/declined-request" class="btn-modern btn-secondary">
+                            <i class="fas fa-times-circle"></i> Declined
                         </a>
                     <% } %>
-                    <a class="btn btn-outline-light navbar" href="/logout" style="padding: 4px 15px;">Sign Out</a>
+                    <a class="btn-modern btn-outline" href="#" onclick="showLogoutConfirmation(event)">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
                 <% } %>
             </div>
         </div>

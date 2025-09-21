@@ -1,67 +1,94 @@
 <% layout('layout/../boilerplate.ejs') %>
 
-<form action="/register" method="POST"  enctype="multipart/form-data" class="validated-form mt-3" novalidate>
-    <div class="" style="display: grid; justify-content: center; align-items: center; font-size: 21px;">
-        <center><h2 style="font-size: 37px; font-weight: bold;" class="mb-1 mt-3">Register</h2></center>
-        <div class="mb-3 mt-3">
-            <label class="form-label" for="fullname">Full Name: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="fullname" id="fullname" autofocus required>
-            <div class="invalid-feedback">
-                Please enter Name
+<div class="text-center" style="padding: 2rem 0;">
+    <div class="modern-form" style="max-width: 550px;">
+        <div class="text-center mb-4">
+            <div style="position: relative; display: inline-block; margin-bottom: 1.5rem;">
+                <div class="loading-pulse" style="background: var(--accent-color); width: 80px; height: 80px;"></div>
+                <i class="fas fa-user-plus" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white;"></i>
             </div>
+            <h1 style="font-size: 2.25rem; font-weight: 700; margin: 0; color: var(--text-primary); margin-bottom: 0.5rem;">Create Account</h1>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 1.1rem;">Join our emotion analytics platform</p>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="username">Enrollment Number</label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="username" id="username" required>
-            <div class="invalid-feedback">
-                Please enter enrollment number
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="Semester">Semester: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="semester" id="semester" required>
-            <div class="invalid-feedback">
-                Please enter your current semester
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="personalemail">Personal Email Id: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="email" name="personalemail" id="personalemail" required>
-            <div class="invalid-feedback">
-                Please add personal email
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="gsuite">Gsuite Id: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="email" name="gsuite" id="gsuite" required>
-            <div class="invalid-feedback">
-                Please add gsuite ID
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="mobilenumber">Contact Number: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="text" name="mobilenumber" id="mobilenumer" required>
-            <div class="invalid-feedback">
-                Please enter your contact number
-            </div>
-        </div>
+        <form action="/register" method="POST" enctype="multipart/form-data" class="validated-form" novalidate>
+            <div class="grid grid-cols-2" style="gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="fullname">Full Name</label>
+                    <input class="form-input" type="text" name="fullname" id="fullname" autofocus required placeholder="Enter your full name">
+                    <div class="invalid-feedback">Please enter your name</div>
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label" for="image">Add Image: </label>
-            <input type="file" name="image" id="image" style="border: 1px solid black; max-width: 298px;" class="form-control">
-        </div>
-
-        <div class="mb-4">
-            <label class="form-label" for="password">Password: </label>
-            <input class="form-control" style="border: 0.01cm solid black; width: 300px;" type="password" name="password" id="password" required>
-            <div class="invalid-feedback">
-                Please add a password
+                <div class="form-group">
+                    <label class="form-label" for="username">Enrollment Number</label>
+                    <input class="form-input" type="text" name="username" id="username" required placeholder="Enter enrollment number">
+                    <div class="invalid-feedback">Please enter enrollment number</div>
+                </div>
             </div>
-        </div>
 
-        <button type="submit" class="btn btn-success mb-3" style="font-size: 18px;">Register</button>
+            <div class="form-group">
+                <label class="form-label" for="semester">Semester</label>
+                <input class="form-input" type="text" name="semester" id="semester" required placeholder="Enter current semester">
+                <div class="invalid-feedback">Please enter your current semester</div>
+            </div>
 
+            <div class="form-group">
+                <label class="form-label" for="personalemail">Personal Email</label>
+                <input class="form-input" type="email" name="personalemail" id="personalemail" required placeholder="Enter personal email">
+                <div class="invalid-feedback">Please enter a valid personal email</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="gsuite">G Suite ID</label>
+                <input class="form-input" type="email" name="gsuite" id="gsuite" required placeholder="Enter G Suite ID">
+                <div class="invalid-feedback">Please enter a valid G Suite ID</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="mobilenumber">Contact Number</label>
+                <input class="form-input" type="tel" name="mobilenumber" id="mobilenumber" required placeholder="Enter contact number">
+                <div class="invalid-feedback">Please enter your contact number</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="image">Profile Image (Required)</label>
+                <input class="form-input" type="file" name="image" id="image" accept="image/*" required style="padding: 0.5rem;">
+                <div class="invalid-feedback">Please upload a profile image</div>
+                <small style="color: var(--text-secondary); font-size: 0.875rem;">Upload a clear photo for verification</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-input" type="password" name="password" id="password" required placeholder="Create a strong password">
+                <div class="invalid-feedback">Please create a password</div>
+            </div>
+
+            <button type="submit" class="btn-modern btn-primary w-full mb-3" id="registerBtn">
+                <i class="fas fa-user-plus"></i> 
+                <span>Create Account</span>
+            </button>
+
+            <div class="text-center">
+                <div style="position: relative; margin: 1.5rem 0;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border);"></div>
+                    <span style="background: var(--background); padding: 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">or</span>
+                </div>
+                
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    Already have an account? 
+                </p>
+                <a href="/login" class="btn-modern btn-outline w-full">
+                    <i class="fas fa-sign-in-alt"></i> Sign In Instead
+                </a>
+            </div>
+        </form>
     </div>
+</div>
 
-</form>
+<script>
+document.querySelector('.validated-form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('registerBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = '<div class="loading"></div> <span>Creating Account...</span>';
+});
+</script>

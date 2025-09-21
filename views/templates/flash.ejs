@@ -1,21 +1,214 @@
-<div style="margin: 5px 10px;">
-    <% if(success && success.length){ %>
-
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="background-color: rgba(0, 255, 89, 0.425); color: rgb(219, 219, 219);">
-            <b><%= success %></b>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" fdprocessedid="u1duro"></button>
-        </div>
-
-    <% } %>
-
-    <% if(error && error.length){ %>
-
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: rgba(220, 64, 64, 0.379); color: rgb(219, 219, 219);">
-
-            <b><%= error %></b>
-
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" fdprocessedid="u1duro"></button>
-        </div>
-
-    <% } %>
+<div
+  class="flash-container"
+  style="
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    max-width: 400px;
+  "
+>
+  <% if(success && success.length){ %>
+  <div class="flash-message flash-success" data-type="success">
+    <div class="flash-content">
+      <i class="fas fa-check-circle flash-icon"></i>
+      <span class="flash-text"><%= success %></span>
+      <button type="button" class="flash-close" onclick="closeFlash(this)">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="flash-progress">
+      <div class="flash-progress-bar"></div>
+    </div>
+  </div>
+  <% } %> <% if(error && error.length){ %>
+  <div class="flash-message flash-error" data-type="error">
+    <div class="flash-content">
+      <i class="fas fa-exclamation-circle flash-icon"></i>
+      <span class="flash-text"><%= error %></span>
+      <button type="button" class="flash-close" onclick="closeFlash(this)">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="flash-progress">
+      <div class="flash-progress-bar"></div>
+    </div>
+  </div>
+  <% } %>
 </div>
+
+<style>
+  .flash-container {
+    pointer-events: none;
+  }
+
+  .flash-message {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transform: translateX(100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    border-left: 4px solid;
+  }
+
+  .flash-message.show {
+    transform: translateX(0);
+  }
+
+  .flash-message.hide {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  .flash-success {
+    border-left-color: #22c55e;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  }
+
+  .flash-error {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  }
+
+  .flash-content {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+  }
+
+  .flash-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .flash-success .flash-icon {
+    color: #22c55e;
+  }
+
+  .flash-error .flash-icon {
+    color: #ef4444;
+  }
+
+  .flash-text {
+    flex: 1;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  .flash-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.375rem;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .flash-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #374151;
+  }
+
+  .flash-progress {
+    height: 3px;
+    background: rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flash-progress-bar {
+    height: 100%;
+    width: 100%;
+    transform-origin: left;
+    transition: transform 2s linear;
+  }
+
+  .flash-success .flash-progress-bar {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+  }
+
+  .flash-error .flash-progress-bar {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+  }
+
+  .flash-progress-bar.animate {
+    transform: scaleX(0);
+  }
+
+  @media (max-width: 640px) {
+    .flash-container {
+      top: 0.5rem;
+      right: 0.5rem;
+      left: 0.5rem;
+      max-width: none;
+    }
+
+    .flash-message {
+      transform: translateY(-100%);
+    }
+
+    .flash-message.show {
+      transform: translateY(0);
+    }
+
+    .flash-message.hide {
+      transform: translateY(-100%);
+    }
+  }
+</style>
+
+<script>
+  function closeFlash(button) {
+    const flashMessage = button.closest(".flash-message");
+    hideFlashMessage(flashMessage);
+  }
+
+  function hideFlashMessage(flashMessage) {
+    flashMessage.classList.add("hide");
+    setTimeout(() => {
+      if (flashMessage.parentNode) {
+        flashMessage.parentNode.removeChild(flashMessage);
+      }
+    }, 300);
+  }
+
+  function initFlashMessages() {
+    const flashMessages = document.querySelectorAll(".flash-message");
+
+    flashMessages.forEach((flashMessage) => {
+      // Show the message with animation
+      setTimeout(() => {
+        flashMessage.classList.add("show");
+      }, 100);
+
+      // Start the progress bar animation
+      const progressBar = flashMessage.querySelector(".flash-progress-bar");
+      setTimeout(() => {
+        progressBar.classList.add("animate");
+      }, 200);
+
+      // Auto-hide after 2 seconds
+      setTimeout(() => {
+        hideFlashMessage(flashMessage);
+      }, 3200); // 200ms delay + 2000ms duration
+    });
+  }
+
+  // Initialize flash messages when DOM is loaded
+  document.addEventListener("DOMContentLoaded", initFlashMessages);
+
+  // Also initialize if script loads after DOM
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initFlashMessages);
+  } else {
+    initFlashMessages();
+  }
+</script>

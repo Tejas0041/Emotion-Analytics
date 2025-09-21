@@ -1,59 +1,197 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bar Chart</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <center>
-    <div>
-        <h1>Bar Graph</h1>
-    </div>
-    <canvas id="myChart" style="max-width: 80%; max-height: 80vh;"></canvas>
-    <a href="/stats"></a>
-  </center>
+<% layout('layout/../boilerplate.ejs') %>
 
-  <script>
+<div style="padding: 2rem 0; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+        <!-- Header Section -->
+        <div class="text-center mb-5">
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                    <i class="fas fa-chart-bar" style="font-size: 1.5rem; color: white;"></i>
+                </div>
+                <h1 style="font-size: 3rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    Emotion Analytics
+                </h1>
+            </div>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin: 0; font-weight: 500;">
+                Detailed breakdown of emotion detection patterns
+            </p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-3" style="gap: 1.5rem; margin-bottom: 3rem;">
+            <div class="modern-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); text-align: center; padding: 2rem;">
+                <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-clock" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem;">Total Time</h3>
+                <p id="totalTime" style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Calculating...</p>
+            </div>
+            <div class="modern-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); text-align: center; padding: 2rem;">
+                <div style="width: 50px; height: 50px; background: var(--success-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-smile" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem;">Dominant</h3>
+                <p id="dominantEmotion" style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Analyzing...</p>
+            </div>
+            <div class="modern-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); text-align: center; padding: 2rem;">
+                <div style="width: 50px; height: 50px; background: var(--info-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-chart-line" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <h3 style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem;">Emotions</h3>
+                <p id="emotionCount" style="color: var(--text-secondary); font-size: 1rem; margin: 0;">Counting...</p>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="modern-card" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); padding: 3rem; margin-bottom: 3rem;">
+            <div style="height: 500px; position: relative;">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/piechart/<%= id || 'default' %>" class="btn-modern btn-success" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-chart-pie"></i> View Distribution Chart
+            </a>
+            <a href="/viewprofile" class="btn-modern btn-secondary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                <i class="fas fa-user"></i> Back to Profile
+            </a>
+            <a href="/home" class="btn-modern btn-outline" style="padding: 1rem 2rem; font-size: 1.1rem; background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.3);">
+                <i class="fas fa-redo"></i> New Analysis
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
     // Data from Node.js
     const data = <%- jsonData %>;
+    
+    // Modern gradient color palette for emotions
+    const emotionColors = {
+        'happy': { bg: '#22c55e', gradient: ['#22c55e', '#16a34a'] },
+        'neutral': { bg: '#64748b', gradient: ['#64748b', '#475569'] }, 
+        'sad': { bg: '#3b82f6', gradient: ['#3b82f6', '#2563eb'] },
+        'angry': { bg: '#ef4444', gradient: ['#ef4444', '#dc2626'] },
+        'fearful': { bg: '#f59e0b', gradient: ['#f59e0b', '#d97706'] },
+        'disgusted': { bg: '#8b5cf6', gradient: ['#8b5cf6', '#7c3aed'] },
+        'surprised': { bg: '#06d6a0', gradient: ['#06d6a0', '#059669'] }
+    };
+    
+    // Calculate stats
+    const totalTime = data.values.reduce((sum, val) => sum + val, 0);
+    const maxIndex = data.values.indexOf(Math.max(...data.values));
+    const dominantEmotion = data.labels[maxIndex];
+    
+    // Update stats cards
+    document.getElementById('totalTime').textContent = totalTime.toFixed(2) + ' seconds';
+    document.getElementById('dominantEmotion').textContent = dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1);
+    document.getElementById('emotionCount').textContent = data.labels.length + ' detected';
 
-    // Create bar chart
+    // Create gradients for chart
     const ctx = document.getElementById('myChart').getContext('2d');
-    const myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: data.labels,
-        datasets: [{
-          label: 'Time (in sec)',
-          data: data.values,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          xAxes: [{
-            ticks: {
-              fontColor: 'white'
-            },
-            gridLines: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            }
-          }],
-          yAxes: [{
-            ticks: {
-              fontColor: 'white',
-            },
-            gridLines: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            }
-          }]
-        }
-      }
+    const gradients = data.labels.map(label => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        const colors = emotionColors[label]?.gradient || ['#64748b', '#475569'];
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(1, colors[1]);
+        return gradient;
     });
-  </script>
-</body>
-</html>
+
+    // Create modern bar chart
+    const myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels.map(label => label.charAt(0).toUpperCase() + label.slice(1)),
+            datasets: [{
+                label: 'Detection Time',
+                data: data.values,
+                backgroundColor: gradients,
+                borderColor: data.labels.map(label => emotionColors[label]?.bg || '#64748b'),
+                borderWidth: 3,
+                borderRadius: 12,
+                borderSkipped: false,
+                hoverBackgroundColor: data.labels.map(label => emotionColors[label]?.bg || '#64748b'),
+                hoverBorderWidth: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    cornerRadius: 12,
+                    displayColors: true,
+                    titleFont: { size: 16, weight: 'bold' },
+                    bodyFont: { size: 14 },
+                    padding: 12,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label + ' Emotion';
+                        },
+                        label: function(context) {
+                            const percentage = totalTime > 0 ? ((context.parsed.y / totalTime) * 100).toFixed(1) : 0;
+                            return `Duration: ${context.parsed.y.toFixed(2)}s (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        color: '#374151',
+                        padding: 10
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.2)',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        font: {
+                            size: 13,
+                            weight: '500'
+                        },
+                        color: '#6b7280',
+                        padding: 10,
+                        callback: function(value) {
+                            return value.toFixed(1) + 's';
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeOutBounce'
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            onHover: (event, activeElements) => {
+                event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+            }
+        }
+    });
+});
+</script>

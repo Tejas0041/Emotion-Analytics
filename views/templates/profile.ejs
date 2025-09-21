@@ -1,56 +1,203 @@
 <% layout('layout/../boilerplate.ejs') %>
 
-<div style="min-height: 89vh;">
-    <center class="mt-4">
-        <div>
-            <img src="<%= u.image[0].thumbnail %>" class="img-thumbnail mb-3 border-start-0 border-end-0 border-opacity-75" style="border-radius: 50%; border: 2px solid black;" alt="">
-
-            <div style="margin: 2px auto;">
-                <div>
-                    <label for="fullname"><b>Name: </b></label>
-                    <span style="font-size: 18px;" id="fullname"><%= u.fullname %></span>
+<div style="padding: 2rem 0; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 0 1rem;">
+        <!-- Header Section -->
+        <div class="text-center mb-5">
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                    <i class="fas fa-user" style="font-size: 1.5rem; color: white;"></i>
                 </div>
-                <hr >
-
-                <div>
-                    <% if(currentUser.username==='Admin'){ %>
-                        <label for="username"><b>Admin Id: </b></label>
-                    <% } else { %>
-                        <label for="username"><b>Enrollment Number: </b></label>
-                    <% } %>
-                        <span style="font-size: 18px;" id="username"><%= u.username %></span>
-                </div>
-                <hr >
-
-                <div>
-                    <label for="semester"><b>Semester: </b></label>
-                    <span style="font-size: 18px;" id="semester"><%= u.semester %></span>
-                </div>
-                <hr >
-
-                <div>
-                    <label for="personalemail"><b>Personal Email: </b></label>
-                    <span style="font-size: 18px;" id="personalemail"><%= u.personalemail %></span>
-                </div>
-                <hr >
-
-                <div>
-                    <label for="gsuite"><b>Gsuite Id: </b></label>
-                    <span style="font-size: 18px;" id="gsuite"><%= u.gsuite %></span>
-                </div>
-                <hr >
-
-                <div>
-                    <label for="mobilenumber"><b>Contact Number: </b></label>
-                    <span style="font-size: 18px;" id="mobilenumber">+91 <%= u.mobilenumber %></span>
-                </div>
-                <hr >
+                <h1 style="font-size: 3rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    My Profile
+                </h1>
             </div>
-            <% if(!(currentUser.username==='Admin')){ %>
-            <a href="/profile/edit/<%= u._id %>" style="text-decoration: none;">
-                <button type="submit" class="btn btn-success mb-3"><b>Edit Profile</b></button>
-            </a>
-            <% } %>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin: 0; font-weight: 500;">
+                Your account information and settings
+            </p>
         </div>
-    </center>
+
+        <!-- Profile Card -->
+        <div class="modern-card" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); padding: 3rem; margin-bottom: 2rem;">
+            <!-- Profile Image Section -->
+            <div class="text-center mb-4">
+                <div style="position: relative; display: inline-block; margin-bottom: 2rem;">
+                    <img src="<%= u.image[0].thumbnail %>" 
+                         style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid white; box-shadow: 0 8px 32px rgba(0,0,0,0.1);" 
+                         alt="Profile Picture">
+                    <div style="position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; background: var(--success-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white;">
+                        <i class="fas fa-check" style="color: white; font-size: 1rem;"></i>
+                    </div>
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem;"><%= u.fullname %></h2>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; margin: 0;">
+                    <% if(currentUser.username==='Admin'){ %>
+                        System Administrator
+                    <% } else { %>
+                        Student • Semester <%= u.semester %>
+                    <% } %>
+                </p>
+            </div>
+
+            <!-- Profile Information Grid -->
+            <div class="grid grid-cols-2" style="gap: 2rem; margin-bottom: 3rem;">
+                <!-- Left Column -->
+                <div>
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">
+                                <% if(currentUser.username==='Admin'){ %>Admin ID<% } else { %>Enrollment Number<% } %>
+                            </label>
+                            <span class="profile-info-value"><%= u.username %></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">Personal Email</label>
+                            <span class="profile-info-value"><%= u.personalemail %></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">Contact Number</label>
+                            <span class="profile-info-value">+91 <%= u.mobilenumber %></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">Semester</label>
+                            <span class="profile-info-value"><%= u.semester %></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-at"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">G Suite ID</label>
+                            <span class="profile-info-value"><%= u.gsuite %></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-item">
+                        <div class="profile-info-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="profile-info-content">
+                            <label class="profile-info-label">Member Since</label>
+                            <span class="profile-info-value">Academic Year 2024</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                <% if(!(currentUser.username==='Admin')){ %>
+                <a href="/profile/edit/<%= u._id %>" class="btn-modern btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+                <% } %>
+                <a href="/home" class="btn-modern btn-secondary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <% if(!(currentUser.username==='Admin')){ %>
+                <a href="/user/stats" class="btn-modern btn-outline" style="padding: 1rem 2rem; font-size: 1.1rem; background: rgba(255,255,255,0.1); color: var(--text-primary); border-color: var(--border-light);">
+                    <i class="fas fa-chart-bar"></i> View Statistics
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.profile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-light);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.profile-info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: var(--primary-color);
+}
+
+.profile-info-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-info-icon i {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.profile-info-content {
+    flex: 1;
+}
+
+.profile-info-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-info-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-info-item {
+        padding: 1rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+}
+</style>

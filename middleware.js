@@ -16,9 +16,9 @@ module.exports.isAdmin= async(req, res, next)=>{
     username= req.user.username;
   }
 
-  if(!(username=='Admin'))
+  if(!(username=='admin'))
   {
-    console.log(username);
+    console.log(`Failed admin access attempt with username: ${username} from IP: ${req.ip}`);
     req.flash('error', 'Incorrect Admin Id or password');
     return res.redirect(`/login`);
   }

@@ -1,24 +1,218 @@
 <% layout('layout/../boilerplate.ejs') %>
 
-<link rel="stylesheet" href="styles/otpverification.css">
+<div style="padding: 3rem 0; min-height: 100vh; background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+    <div class="container" style="max-width: 500px; margin: 0 auto; padding: 0 1rem;">
+        <!-- Header Section -->
+        <div class="text-center mb-5">
+            <div style="display: inline-flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+                <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: white;"></i>
+                </div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    Verify Identity
+                </h1>
+            </div>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin: 0; font-weight: 500;">
+                Enter the verification code sent to your email
+            </p>
+        </div>
 
-<center style="margin-top: 150px;">
-    <div class="outer-container" style="min-height: 65.8vh;">
-        <h2>An OTP has been sent to your registered Gsuite ID</h2>
-        <h5 class="mb-4"><i>(<%= u[0].gsuite %>)</i></h5>
-        <form action="/change-password/<%= u[0]._id %>" method="post" class="validated-form" novalidate>
-        <div class="container mb-4">
-            <div id="inputs" class="inputs">
-                <input class="input" name="x1" type="text" inputmode="numeric" maxlength="1" required autofocus />
-                <input class="input" name="x2"  type="text" inputmode="numeric" maxlength="1" required />
-                <input class="input" name="x3"  type="text" inputmode="numeric" maxlength="1" required />
-                <input class="input" name="x4"  type="text" inputmode="numeric" maxlength="1" required />
-                <input class="input" name="x5"  type="text" inputmode="numeric" maxlength="1" required />
-                <input class="input" name="x6"  type="text" inputmode="numeric" maxlength="1" required />
+        <!-- OTP Verification Card -->
+        <div class="modern-card" style="background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); padding: 3rem;">
+            <!-- Email Info -->
+            <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 1.5rem; border-radius: var(--border-radius-lg); border: 1px solid #059669; margin-bottom: 2rem; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="fas fa-envelope-open" style="color: #047857; font-size: 1.3rem;"></i>
+                    <h3 style="margin: 0; color: #065f46; font-weight: 700; font-size: 1.1rem;">Verification Code Sent</h3>
+                </div>
+                <p style="margin: 0; color: #065f46; font-size: 0.95rem; line-height: 1.5;">
+                    A 6-digit verification code has been sent to:
+                </p>
+                <p style="margin: 0.5rem 0 0; color: #047857; font-weight: 700; font-size: 1rem;">
+                    <i class="fas fa-at"></i> <%= u[0].gsuite %>
+                </p>
+            </div>
+
+            <form action="/change-password/<%= u[0]._id %>" method="POST" class="validated-form" novalidate id="otpForm">
+                <div class="form-group">
+                    <label class="form-label" style="text-align: center; display: block; margin-bottom: 1.5rem;">
+                        <i class="fas fa-key" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                        Enter 6-Digit Verification Code
+                    </label>
+                    
+                    <div class="otp-container">
+                        <input class="otp-input" name="x1" type="text" inputmode="numeric" maxlength="1" required autofocus />
+                        <input class="otp-input" name="x2" type="text" inputmode="numeric" maxlength="1" required />
+                        <input class="otp-input" name="x3" type="text" inputmode="numeric" maxlength="1" required />
+                        <input class="otp-input" name="x4" type="text" inputmode="numeric" maxlength="1" required />
+                        <input class="otp-input" name="x5" type="text" inputmode="numeric" maxlength="1" required />
+                        <input class="otp-input" name="x6" type="text" inputmode="numeric" maxlength="1" required />
+                    </div>
+                    
+                    <small class="form-help" style="text-align: center; display: block; margin-top: 1rem;">
+                        Enter the 6-digit code from your email
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                    <button type="submit" class="btn-modern btn-success" id="verifyBtn" style="padding: 1rem 2.5rem; font-size: 1.1rem;">
+                        <i class="fas fa-check-circle"></i> 
+                        <span>Verify Code</span>
+                    </button>
+                    <a href="/forgot-password" class="btn-modern btn-secondary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Section -->
+        <div class="modern-card" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 2rem; margin-top: 2rem;">
+            <div style="text-align: center; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">
+                <p style="margin: 0 0 1rem;">
+                    <i class="fas fa-clock" style="color: var(--warning-color); margin-right: 0.5rem;"></i>
+                    The verification code will expire in 10 minutes
+                </p>
+                <p style="margin: 0; color: var(--text-light);">
+                    Didn't receive the code? Check your spam folder or try again
+                </p>
             </div>
         </div>
-        <button class="btn btn-success" type="submit">Verify</button>
-        </form>
     </div>
-</center>
-<script src="scripts/otpverification.js"></script>
+</div>
+
+<style>
+.otp-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+.otp-input {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(6, 214, 160, 0.1);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.otp-input:valid {
+    border-color: var(--success-color);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.form-help {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .otp-container {
+        gap: 0.5rem;
+    }
+    
+    .otp-input {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    h1 {
+        font-size: 2rem !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const otpForm = document.getElementById('otpForm');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    // OTP input handling
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            const value = e.target.value;
+            
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) {
+                e.target.value = '';
+                return;
+            }
+            
+            // Move to next input
+            if (value && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+            
+            // Check if all inputs are filled
+            checkAllInputs();
+        });
+
+        input.addEventListener('keydown', function(e) {
+            // Handle backspace
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+            
+            // Handle paste
+            if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                navigator.clipboard.readText().then(text => {
+                    const digits = text.replace(/\D/g, '').slice(0, 6);
+                    digits.split('').forEach((digit, i) => {
+                        if (otpInputs[i]) {
+                            otpInputs[i].value = digit;
+                        }
+                    });
+                    checkAllInputs();
+                });
+            }
+        });
+    });
+
+    function checkAllInputs() {
+        const allFilled = Array.from(otpInputs).every(input => input.value.length === 1);
+        if (allFilled) {
+            verifyBtn.style.background = 'linear-gradient(135deg, var(--success-color), #16a34a)';
+            verifyBtn.style.transform = 'translateY(-2px)';
+            verifyBtn.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.3)';
+        } else {
+            verifyBtn.style.background = '';
+            verifyBtn.style.transform = '';
+            verifyBtn.style.boxShadow = '';
+        }
+    }
+
+    // Form submission handler
+    otpForm.addEventListener('submit', function(e) {
+        verifyBtn.classList.add('loading');
+        verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verifying...</span>';
+    });
+
+    // Auto-focus first input
+    otpInputs[0].focus();
+});
+</script>

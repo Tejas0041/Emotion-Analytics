@@ -1,46 +1,106 @@
 <% layout('layout/../boilerplate.ejs') %>
 
-<div style="min-height: 85vh;">
-    <div>
-        <center class="mt-5">
-            <h2>Emotion Recognition Data</h2>
-        </center>
-        <div class="container bg-dark" style="color: white; padding: 15px 20px; border-radius: 10px; font-size: 20px;">
-            <div class="row mb-3">
-                <div class="col fw-bold">Emotion</div>
-                <div class="col fw-bold">Happy</div>
-                <div class="col fw-bold">Neutral</div>
-                <div class="col fw-bold">Sad</div>
-                <div class="col fw-bold">Angry</div>
-                <div class="col fw-bold">Fear</div>
-                <div class="col fw-bold">Disgusting</div>
-                <div class="col fw-bold">Surprise</div>
+<div class="text-center" style="padding: 2rem 0;">
+    <div class="modern-card" style="max-width: 1000px; margin: 2rem auto;">
+        <!-- Header Section -->
+        <div class="mb-4">
+            <div style="display: inline-flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div class="loading-pulse" style="background: var(--success-color);"></div>
+                <h1 style="font-size: 2.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                    Emotion Analysis Results
+                </h1>
             </div>
-            <hr>
-            <div class="row">
-                <div class="col fw-bold">Time</div>
-                <div class="col"><%= (emotion.happy)/1000 %> sec</div>
-                <div class="col"><%= (emotion.neutral)/1000 %> sec</div>
-                <div class="col"><%= (emotion.sad)/1000 %> sec</div>
-                <div class="col"><%= (emotion.angry)/1000 %> sec</div>
-                <div class="col"><%= (emotion.fearful)/1000 %> sec</div>
-                <div class="col"><%= (emotion.disgusted)/1000 %> sec</div>
-                <div class="col"><%= (emotion.surprised)/1000 %> sec</div>
-                <div style="font-size: medium;">(Total Time): <%= emotion.total/1000 %> sec  </div>
+            <p style="color: var(--text-secondary); font-size: 1.2rem; margin: 0;">
+                Your emotional state analysis from the recent session
+            </p>
+        </div>
+
+        <!-- Emotion Data Grid -->
+        <div class="grid grid-cols-1" style="gap: 2rem; margin-bottom: 3rem;">
+            <!-- Summary Card -->
+            <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 2rem; border-radius: var(--border-radius-lg); text-align: center;">
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: white;">Total Analysis Time</h2>
+                <div style="font-size: 3rem; font-weight: 700; margin: 1rem 0;"><%= (emotion.total/1000).toFixed(1) %> seconds</div>
+                <p style="opacity: 0.9; margin: 0;">Complete emotional analysis session</p>
+            </div>
+
+            <!-- Emotions Grid -->
+            <div class="grid grid-cols-2" style="gap: 1.5rem;">
+                <% 
+                const emotions = [
+                    {name: 'Happy', value: emotion.happy, icon: 'fa-smile', color: '#22c55e'},
+                    {name: 'Neutral', value: emotion.neutral, icon: 'fa-meh', color: '#64748b'},
+                    {name: 'Sad', value: emotion.sad, icon: 'fa-frown', color: '#3b82f6'},
+                    {name: 'Angry', value: emotion.angry, icon: 'fa-angry', color: '#ef4444'},
+                    {name: 'Fear', value: emotion.fearful, icon: 'fa-surprise', color: '#f59e0b'},
+                    {name: 'Disgusted', value: emotion.disgusted, icon: 'fa-grimace', color: '#8b5cf6'},
+                    {name: 'Surprised', value: emotion.surprised, icon: 'fa-grin-stars', color: '#06d6a0'}
+                ];
+                
+                emotions.forEach(function(emo) { 
+                    const percentage = emotion.total > 0 ? ((emo.value / emotion.total) * 100).toFixed(1) : 0;
+                %>
+                <div style="background: var(--surface-elevated); padding: 1.5rem; border-radius: var(--border-radius-lg); border: 2px solid var(--border-light); transition: var(--transition);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)'">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 50px; height: 50px; background: <%= emo.color %>; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas <%= emo.icon %>" style="font-size: 1.5rem; color: white;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--text-primary);"><%= emo.name %></h3>
+                            <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;"><%= percentage %>% of session</p>
+                        </div>
+                    </div>
+                    <div style="background: var(--background-secondary); border-radius: 1rem; height: 8px; overflow: hidden;">
+                        <div style="background: <%= emo.color %>; height: 100%; width: <%= percentage %>%; border-radius: 1rem; transition: width 1s ease-out;"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <span style="font-size: 1.5rem; font-weight: 700; color: <%= emo.color %>;"><%= (emo.value/1000).toFixed(1) %>s</span>
+                    </div>
+                </div>
+                <% }); %>
             </div>
         </div>
-        <div class="container mt-5 bg-dark" style="color: white; padding: 15px 20px; border-radius: 10px; font-size: 20px;">
-            <div class="row mb-3">
-                <div class="col fw-bold">Charts</div>
-                <div class="col fw-bold">Bar Graph</div>
-                <div class="col fw-bold">Pie Chart</div>
+
+        <!-- Charts Section -->
+        <div style="background: linear-gradient(135deg, var(--surface), var(--background-secondary)); padding: 2rem; border-radius: var(--border-radius-lg); border: 1px solid var(--border-light);">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); text-align: center;">
+                <i class="fas fa-chart-bar" style="color: var(--accent-color); margin-right: 0.5rem;"></i>
+                Visual Analytics
+            </h2>
+            <div class="grid grid-cols-2" style="gap: 2rem;">
+                <a href="/bargraph/<%= id %>" class="btn-modern btn-primary" style="padding: 2rem; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <i class="fas fa-chart-bar" style="font-size: 3rem;"></i>
+                    <div>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: inherit;">Bar Chart</h3>
+                        <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">Compare emotion levels</p>
+                    </div>
+                </a>
+                <a href="/piechart/<%= id %>" class="btn-modern btn-success" style="padding: 2rem; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <i class="fas fa-chart-pie" style="font-size: 3rem;"></i>
+                    <div>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: inherit;">Pie Chart</h3>
+                        <p style="margin: 0; opacity: 0.9; font-size: 0.9rem;">View emotion distribution</p>
+                    </div>
+                </a>
             </div>
-            <hr>
-            <div class="row">
-                <div class="col fw-bold">Links</div>
-                <div class="col"><a href="/bargraph/<%= id %>" class="link" style="text-decoration: none;">Open Bar Graph</a></div>
-                <div class="col"><a href="/piechart/<%= id %>" style="text-decoration: none;">Open Pie Chart</a></div>
-            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="/home" class="btn-modern btn-outline" style="margin-right: 1rem;">
+                <i class="fas fa-redo"></i> New Analysis
+            </a>
+            <a href="/viewprofile" class="btn-modern btn-secondary">
+                <i class="fas fa-user"></i> Back to Profile
+            </a>
         </div>
     </div>
 </div>
+
+<style>
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Statistics - Emotion Analytics</title>
+    <link rel="icon" type="image/png" href="/emotion.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #0f172a;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-link {
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #3b82f6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            margin-bottom: 1rem;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .records-section {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        
+        .records-table th,
+        .records-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .records-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .emotion-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.25rem 0;
+        }
+        
+        .emotion-label {
+            min-width: 80px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+        
+        .emotion-progress {
+            flex: 1;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .emotion-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+        
+        .emotion-value {
+            min-width: 50px;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-align: right;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem 0.5rem;
+            }
+            
+            .records-table {
+                font-size: 0.875rem;
+            }
+            
+            .records-table th,
+            .records-table td {
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/home" class="navbar-brand">
+                <img src="/emotion.png" alt="Logo" style="width: 24px; height: 24px;">
+                EMOTION ANALYTICS
+            </a>
+            <ul class="navbar-nav">
+                <li><a href="/home" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="/viewprofile" class="nav-link"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-icon">
+                <i class="fas fa-chart-bar" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h1>My Statistics</h1>
+            <p>Complete overview of your emotion analysis history</p>
+        </div>
+
+        <!-- Back Button -->
+        <a href="/viewprofile" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
+
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-number" style="color: #3b82f6;"><%= emotions.length %></div>
+                <div class="stat-label">Total Sessions</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number" style="color: #22c55e;">
+                    <% 
+                    const totalAnalysisTime = emotions.reduce((total, emotion) => total + (emotion.total || 0), 0);
+                    const formattedTime = (totalAnalysisTime / 1000).toFixed(1);
+                    %>
+                    <%= isNaN(formattedTime) ? '0.0' : formattedTime %>s
+                </div>
+                <div class="stat-label">Total Analysis Time</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <div class="stat-number" style="color: #f59e0b;">
+                    <% 
+                    const totalHappy = emotions.reduce((total, emotion) => total + (emotion.happy || 0), 0);
+                    const totalTime = emotions.reduce((total, emotion) => total + (emotion.total || 0), 0);
+                    const happyPercentage = totalTime > 0 ? ((totalHappy / totalTime) * 100).toFixed(1) : 0;
+                    %>
+                    <%= isNaN(happyPercentage) ? '0.0' : happyPercentage %>%
+                </div>
+                <div class="stat-label">Happiness Average</div>
+            </div>
+        </div>
+
+        <!-- Records Section -->
+        <div class="records-section">
+            <h2 class="section-title">
+                <i class="fas fa-history"></i> Analysis History
+            </h2>
+            
+            <% if (emotions.length > 0) { %>
+                <div style="overflow-x: auto;">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Duration</th>
+                                <th>Emotions Detected</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% emotions.forEach(function(emotion, index) { 
+                                const emotionTypes = ['happy', 'neutral', 'sad', 'angry', 'fearful', 'disgusted', 'surprised'];
+                                const emotionColors = {
+                                    'happy': '#22c55e',
+                                    'neutral': '#64748b',
+                                    'sad': '#3b82f6',
+                                    'angry': '#ef4444',
+                                    'fearful': '#f59e0b',
+                                    'disgusted': '#8b5cf6',
+                                    'surprised': '#06d6a0'
+                                };
+                            %>
+                            <tr>
+                                <td>
+                                    <% 
+                                    const createdDate = emotion.createdAt ? new Date(emotion.createdAt) : new Date();
+                                    const isValidDate = !isNaN(createdDate.getTime());
+                                    %>
+                                    <div style="font-weight: 600;">
+                                        <%= isValidDate ? createdDate.toLocaleDateString() : 'Unknown Date' %>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: #64748b;">
+                                        <%= isValidDate ? createdDate.toLocaleTimeString() : 'Unknown Time' %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% 
+                                    const totalTime = emotion.total || 0;
+                                    const duration = (totalTime / 1000).toFixed(1);
+                                    %>
+                                    <span style="font-weight: 600; color: #3b82f6;">
+                                        <%= isNaN(duration) ? '0.0' : duration %>s
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="min-width: 300px;">
+                                        <% 
+                                        let hasEmotions = false;
+                                        emotionTypes.forEach(function(emotionType) { 
+                                            const value = emotion[emotionType] || 0;
+                                            const totalEmotion = emotion.total || 0;
+                                            const percentage = totalEmotion > 0 ? ((value / totalEmotion) * 100) : 0;
+                                            if (percentage > 0 && !isNaN(percentage)) {
+                                                hasEmotions = true;
+                                        %>
+                                        <div class="emotion-bar">
+                                            <span class="emotion-label"><%= emotionType %></span>
+                                            <div class="emotion-progress">
+                                                <div class="emotion-fill" 
+                                                     style="width: <%= percentage.toFixed(1) %>%; background: <%= emotionColors[emotionType] %>;"></div>
+                                            </div>
+                                            <span class="emotion-value"><%= percentage.toFixed(1) %>%</span>
+                                        </div>
+                                        <% } }); 
+                                        if (!hasEmotions) { %>
+                                        <div style="color: #64748b; font-style: italic; padding: 0.5rem;">
+                                            No emotion data available
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="/bargraph/<%= emotion._id %>" class="btn btn-primary">
+                                            <i class="fas fa-chart-bar"></i> Bar Chart
+                                        </a>
+                                        <a href="/piechart/<%= emotion._id %>" class="btn btn-success">
+                                            <i class="fas fa-chart-pie"></i> Pie Chart
+                                        </a>
+                                        <form method="POST" action="/emotion/<%= emotion._id %>?_method=DELETE" style="display: inline;" 
+                                              onsubmit="return confirm('Are you sure you want to delete this record?')">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>No Analysis Records Found</h3>
+                    <p>You haven't performed any emotion analysis yet.</p>
+                    <a href="/home" class="btn btn-primary" style="margin-top: 1rem; padding: 1rem 2rem;">
+                        <i class="fas fa-play"></i> Start Your First Analysis
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        // Animate emotion progress bars on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.emotion-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

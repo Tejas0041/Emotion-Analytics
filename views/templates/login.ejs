@@ -1,36 +1,66 @@
 <% layout('layout/../boilerplate.ejs') %>
 
-<div style="min-height: 88.8vh;">
-
-    <form action="/login" method="POST" class="validated-form mt-3" novalidate>
-        <div class="" style="display: grid; justify-content: center; align-items: center; font-size: 21px;">
-            <center><h2 style="font-size: 37px; font-weight: bold;" class="mb-1 mt-3">Login</h2></center>
-            <div class="mb-3 mt-3">
-                <label class="form-label" for="username">Enrollment number: </label>
-                <input class="form-control" style="border: 0.01cm solid black;" type="text" name="username" id="username" autofocus required>
-                <div class="invalid-feedback">
-                    Please enter Enrollment number
-                </div>
+<div class="text-center" style="padding: 3rem 0;">
+    <div class="modern-form">
+        <!-- Header with animated icon -->
+        <div class="text-center mb-4">
+            <div style="position: relative; display: inline-block; margin-bottom: 1.5rem;">
+                <div class="loading-pulse" style="background: var(--primary-color); width: 80px; height: 80px;"></div>
+                <i class="fas fa-brain" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; color: white;"></i>
             </div>
-
-            <div class="mb-2">
-                <label class="form-label" for="password">Password: </label>
-                <input class="form-control" style="border: 0.01cm solid black;" type="password" name="password" id="password" required>
-                <div class="invalid-feedback">
-                    Please enter password
-                </div>
-            </div>
-
-            <a href="/forgot-password" style="text-decoration: none; font-size: 18px;" class="mb-2">Forgot Password?</a>
-
-            <button type="submit" class="btn btn-success mb-3" style="font-size: 18px;">Log In</button>
-
-            <p class="mb-3">Do not have an account? <a href="/register" style="text-decoration: none;">Register</a></p>
-            <center>
-                <p class="mb-3"><a href="/login/admin">Click here for admin login</a></p>
-            </center>
-
+            <h1 style="font-size: 2.25rem; font-weight: 700; margin: 0; color: var(--text-primary); margin-bottom: 0.5rem;">Welcome Back</h1>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 1.1rem;">Sign in to continue your emotion analytics journey</p>
         </div>
 
-    </form>
+        <form action="/login" method="POST" class="validated-form" novalidate id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="username">Enrollment Number</label>
+                <input class="form-input" type="text" name="username" id="username" autofocus required placeholder="Enter your enrollment number">
+                <div class="invalid-feedback">Please enter your enrollment number</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-input" type="password" name="password" id="password" required placeholder="Enter your password">
+                <div class="invalid-feedback">Please enter your password</div>
+            </div>
+
+            <div class="text-center mb-4">
+                <a href="/forgot-password" style="color: var(--primary-color); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-key"></i> Forgot Password?
+                </a>
+            </div>
+
+            <button type="submit" class="btn-modern btn-primary w-full mb-4" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> 
+                <span>Sign In</span>
+            </button>
+
+            <div class="text-center">
+                <div style="position: relative; margin: 1.5rem 0;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border);"></div>
+                    <span style="background: var(--background); padding: 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">or</span>
+                </div>
+                
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    Don't have an account? 
+                </p>
+                <a href="/register" class="btn-modern btn-outline w-full mb-3">
+                    <i class="fas fa-user-plus"></i> Create New Account
+                </a>
+                
+                <a href="/login/admin" style="color: var(--accent-color); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;">
+                    <i class="fas fa-user-shield"></i> Admin Access
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const btn = document.getElementById('loginBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = '<div class="loading"></div> <span>Signing In...</span>';
+});
+</script>
